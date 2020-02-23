@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def plot_fitness_curves(fitness_data, title, xlim=None, ylim=None):
+def plot_fitness_curves(fitness_dfs, hp_vals, hp_name, title, xlim=None, ylim=None):
     """
     Parameters
     ----------
@@ -26,24 +26,30 @@ def plot_fitness_curves(fitness_data, title, xlim=None, ylim=None):
     if ylim is not None:
         ax.set_ylim(*ylim)
 
-    # compute means and standard deviations across all runs
-    fitness_means = np.mean(fitness_data, axis=1)
-    fitness_stdevs = np.std(fitness_data, axis=1)
+    lines = []
+    fitness_means_dfs = []
+    for fitness_df, hp_val in zip(fitness_dfs, hp_vals):
+        # compute means and standard deviations across all runs
+        fitness_means = np.mean(fitness_df, axis=1)
+        fitness_stdevs = np.std(fitness_df, axis=1)
 
-    # plot scores
-    ax.fill_between(
-        fitness_data.index,
-        fitness_means - fitness_stdevs,
-        fitness_means + fitness_stdevs,
-        alpha=0.1,
-        color='r',
-    )
-    ax.plot(fitness_means, '-', color='r', label="Mean fitness")
-    ax.legend(loc='best')
+        # plot scores
+        ax.fill_between(
+            fitness_df.index,
+            fitness_means - fitness_stdevs,
+            fitness_means + fitness_stdevs,
+            alpha=0.1,
+        )
+        line = ax.plot(fitness_means, label=str(hp_val))
+        lines.append(line[0])
+        fitness_means_dfs.append(fitness_means)
+
+    labels = [l.get_label() for l in lines]
+    ax.legend(lines, labels, title=hp_name, loc='best')
     plt.tight_layout()
 
-    return plt
+    return fitness_means_dfs
 
 
-def plot_time_complexity_curves(df, title):
+def plot_algo_comparisons(rhc_df, sa_df, ga_df, mimic_df, title):
     pass
