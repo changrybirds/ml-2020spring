@@ -67,7 +67,7 @@ def n_queens_rhc(nq_problem, initial_state, num_runs=20, verbose=False):
     )
 
     plt.show()
-    plt.savefig('graphs/nqueens_rhc_fitness.png')
+    plt.savefig('graphs/n_queens_rhc_fitness.png')
     plt.clf()
 
 
@@ -116,7 +116,7 @@ def n_queens_sa(nq_problem, initial_state, num_runs=20, verbose=False):
     )
 
     plt.show()
-    plt.savefig('graphs/nqueens_sa_fitness.png')
+    plt.savefig('graphs/n_queens_sa_fitness.png')
     plt.clf()
 
 
