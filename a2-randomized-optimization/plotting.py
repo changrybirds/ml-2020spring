@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def plot_fitness_curves(fitness_dfs, hp_vals, hp_name, title, xlim=None, ylim=None):
+def plot_fitness_curves(fitness_dfs, hp_values, hp_name, title, xlim=None, ylim=None):
     """
     Parameters
     ----------
@@ -28,7 +28,7 @@ def plot_fitness_curves(fitness_dfs, hp_vals, hp_name, title, xlim=None, ylim=No
 
     lines = []
     fitness_means_dfs = []
-    for fitness_df, hp_val in zip(fitness_dfs, hp_vals):
+    for fitness_df, hp_val in zip(fitness_dfs, hp_values):
         # compute means and standard deviations across all runs
         fitness_means = np.mean(fitness_df, axis=1)
         fitness_stdevs = np.std(fitness_df, axis=1)

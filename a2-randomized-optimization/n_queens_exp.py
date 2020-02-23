@@ -10,7 +10,7 @@ import plotting
 
 
 # redefine n-queens as a maximization problem
-# from tutorial docs: https://mlrose.readthedocs.io/en/stable/source/tutorial1.html
+# adapted from tutorial docs: https://mlrose.readthedocs.io/en/stable/source/tutorial1.html
 def queens_max(state):
     # Initialize counter
     fitness_cnt = 0
@@ -30,99 +30,186 @@ def queens_max(state):
     return fitness_cnt
 
 
-def n_queens_rhc(nq_problem, initial_state, num_runs=20, verbose=False):
+def n_queens_rhc(nq_problem, initial_state, max_iters=np.inf, num_runs=20, verbose=False):
+    hp_name = 'restarts'
+    hp_values = [10, 20, 30]
+
+    # run for each hp value and append results to list
+
+    fitness_dfs = []
     runs = np.arange(num_runs)
-    max_iters = 1000
-    restarts = 10
 
-    run_times = np.zeros(num_runs)
-    fitness_data = pd.DataFrame()
+    for hp_value in hp_values:
+        restarts = hp_value  # set varied HP at beginning of loop
 
-    for run in runs:
-        run_t0 = time()
-        best_state, best_fitness, fitness_curve = mlrose.random_hill_climb(
-            problem=nq_problem,
-            max_attempts=10,
-            max_iters=max_iters,
-            restarts=restarts,
-            init_state=initial_state,
-            curve=True,
-        )
-        run_time = time() - run_t0
-        run_times[run] = run_time
+        run_times = np.zeros(num_runs)
+        fitness_data = pd.DataFrame()
 
-        fitness_data = pd.concat([fitness_data, pd.DataFrame(fitness_curve)], axis=1, sort=False)
-        # if verbose: print(fitness_data.tail())
+        for run in runs:
+            run_t0 = time()
+            best_state, best_fitness, fitness_curve = mlrose.random_hill_climb(
+                problem=nq_problem,
+                restarts=restarts,
+                max_attempts=10,
+                max_iters=max_iters,
+                init_state=initial_state,
+                curve=True,
+            )
+            run_time = time() - run_t0
+            run_times[run] = run_time
 
-    fitness_data.columns = runs
-    fitness_data = fitness_data.fillna(method='ffill')
+            fitness_data = pd.concat([fitness_data, pd.DataFrame(fitness_curve)], axis=1, sort=False)
 
-    avg_run_time = np.average(run_times)
-    print("N-Queens - RHC avg run time:", avg_run_time)
+        fitness_data.columns = runs
+        fitness_data = fitness_data.fillna(method='ffill')
+        fitness_dfs.append(fitness_data)
+
+
+                # calculate and print avg time per run# print avg run time
+        avg_run_time = np.average(run_times)
+        print("N-Queens - RHC avg run time,", hp_value, hp_name, ":", avg_run_time)
 
     # generate plots
-    plotting.plot_fitness_curves(
-        fitness_data,
-        title="RHC for N-queens: fitness vs. iterations",
+    plot_title = "N-Queens RHC: fitness vs. iterations"
+    fitness_means_dfs = plotting.plot_fitness_curves(
+        fitness_dfs=fitness_dfs,
+        hp_values=hp_values,
+        hp_name=hp_name,
+        title=plot_title,
     )
 
-    plt.show()
+    # plt.show()
     plt.savefig('graphs/n_queens_rhc_fitness.png')
     plt.clf()
 
+    return fitness_means_dfs
 
-def n_queens_sa(nq_problem, initial_state, num_runs=20, verbose=False):
+
+def n_queens_sa(nq_problem, initial_state, max_iters=np.inf, num_runs=20, verbose=False):
+    hp_name = 'schedule'
+    hp_values = [mlrose.ArithDecay(), mlrose.GeomDecay(), mlrose.ExpDecay()]
+    hp_values_strings = [val.get_info__()['schedule_type'] for val in hp_values]
+
+    # run for each hp value and append results to list
+
+    fitness_dfs = []
     runs = np.arange(num_runs)
-    max_iters = 1000
-    decay_schedule = mlrose.ExpDecay()
 
-    # if verbose: print(fitness_data.head())
-    run_times = np.zeros(num_runs)
-    fitness_data = pd.DataFrame()
+    for hp_value, hp_value_string in zip(hp_values, hp_values_strings):
+        schedule = hp_value  # set varied HP at beginning of loop
 
-    for run in runs:
-        run_t0 = time()
-        best_state, best_fitness, fitness_curve = mlrose.simulated_annealing(
-            problem=nq_problem,
-            schedule=decay_schedule,
-            max_attempts=10,
-            max_iters=max_iters,
-            init_state=initial_state,
-            curve=True,
-            # random_state=313,
-        )
-        run_time = time() - run_t0
-        run_times[run] = run_time
+        run_times = np.zeros(num_runs)
+        fitness_data = pd.DataFrame()
 
-        # if verbose:
-        #     print("Run", run, ':', fitness_curve[0:5])
-        #     print("Fitness curve shape:", fitness_curve.shape)
-        #     print(fitness_data.shape)
+        for run in runs:
+            run_t0 = time()
+            best_state, best_fitness, fitness_curve = mlrose.simulated_annealing(
+                problem=nq_problem,
+                schedule=schedule,
+                max_attempts=10,
+                max_iters=max_iters,
+                curve=True,
+                # random_state=313,
+            )
+            run_time = time() - run_t0
+            run_times[run] = run_time
 
-        fitness_data = pd.concat([fitness_data, pd.DataFrame(fitness_curve)], axis=1, sort=False)
-        # if verbose: print(fitness_data.tail())
+            fitness_data = pd.concat([fitness_data, pd.DataFrame(fitness_curve)], axis=1, sort=False)
 
-    fitness_data.columns = runs
-    fitness_data = fitness_data.fillna(method='ffill')
+        fitness_data.columns = runs
+        fitness_data = fitness_data.fillna(method='ffill')
+        fitness_dfs.append(fitness_data)
 
-    # print avg run time
-    avg_run_time = np.average(run_times)
-    print("N-Queens - SA avg run time:", avg_run_time)
+
+        # calculate and print avg time per run
+        avg_run_time = np.average(run_times)
+        print("N-Queens - SA avg run time,", hp_value_string, hp_name, ":", avg_run_time)
 
     # generate plots
-    plotting.plot_fitness_curves(
-        fitness_data,
-        title="SA for N-Queens: fitness vs. iterations",
+    plot_title = "N-Queens SA: fitness vs. iterations"
+    fitness_means_dfs = plotting.plot_fitness_curves(
+        fitness_dfs=fitness_dfs,
+        hp_values=hp_values_strings,
+        hp_name=hp_name,
+        title=plot_title,
     )
 
-    plt.show()
+    # plt.show()
     plt.savefig('graphs/n_queens_sa_fitness.png')
     plt.clf()
+
+    return fitness_means_dfs
+
+
+def n_queens_ga(nq_problem, max_iters=np.inf, num_runs=20, verbose=False):
+    # HP to vary
+    hp_name = 'pop_breed_percent'
+    hp_values = [0.25, 0.50, 0.75]
+
+    # other hyperparameters for genetic algorithm
+    population_size = 200
+    elite_dreg_ratio = 0.95
+    mutation_prob = 0.1
+
+    # run for each hp value and append results to list
+
+    fitness_dfs = []
+    runs = np.arange(num_runs)
+
+    for hp_value in hp_values:
+        pop_breed_percent = hp_value  # set varied HP at beginning of loop
+
+        run_times = np.zeros(num_runs)
+        fitness_data = pd.DataFrame()
+
+        for run in runs:
+            run_t0 = time()
+            best_state, best_fitness, fitness_curve = mlrose.genetic_alg(
+                problem=nq_problem,
+                pop_size=population_size,
+                pop_breed_percent=pop_breed_percent,
+                elite_dreg_ratio=elite_dreg_ratio,
+                mutation_prob=mutation_prob,
+                max_attempts=10,
+                max_iters=max_iters,
+                curve=True,
+            )
+            run_time = time() - run_t0
+            run_times[run] = run_time
+
+            fitness_data = pd.concat([fitness_data, pd.DataFrame(fitness_curve)], axis=1, sort=False)
+
+        fitness_data.columns = runs
+        fitness_data = fitness_data.fillna(method='ffill')
+        fitness_dfs.append(fitness_data)
+
+        # calculate and print avg time per run
+        avg_run_time = np.average(run_times)
+        print("N-Queens - GA avg run time,", hp_value, hp_name, ":", avg_run_time)
+
+    # generate plots
+    plot_title = "N-Queens GA - " \
+        + str(population_size) + " pop, " \
+        + str(mutation_prob) + " mut prob, " \
+        + ": fit vs iter"
+    fitness_means_dfs = plotting.plot_fitness_curves(
+        fitness_dfs=fitness_dfs,
+        hp_values=hp_values,
+        hp_name=hp_name,
+        title=plot_title,
+    )
+
+    # plt.show()
+    plt.savefig('graphs/n_queens_ga_fitness.png')
+    plt.clf()
+
+    return fitness_means_dfs
 
 
 def main():
     verbose = True
     num_runs = 20
+    max_iters = 1000
 
     # define custom fitness function to maximize instead of minimize
     fitness_fn = mlrose.CustomFitness(queens_max)
@@ -140,10 +227,15 @@ def main():
     initial_state = np.random.randint(0, length, size=length)
 
     # randomized hill climbing
-    n_queens_rhc(nq_problem, initial_state, num_runs, verbose=verbose)
+    rhc_fitness = n_queens_rhc(nq_problem, initial_state, max_iters, num_runs, verbose)
+    print('---')
 
     # simulated annealing
-    n_queens_sa(nq_problem, initial_state, num_runs, verbose=verbose)
+    sa_fitness = n_queens_sa(nq_problem, initial_state, max_iters, num_runs, verbose)
+    print('---')
+
+    # genetic algorithm
+    ga_fitness = n_queens_ga(nq_problem, max_iters, num_runs, verbose)
 
 
 if __name__ == "__main__":
