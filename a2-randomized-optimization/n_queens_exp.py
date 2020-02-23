@@ -71,18 +71,16 @@ def n_queens_rhc(nq_problem, initial_state, max_iters=np.inf, num_runs=20, verbo
 
     # generate plots
     plot_title = "N-Queens RHC: fitness vs. iterations"
-    fitness_means_dfs = plotting.plot_fitness_curves(
+    plotting.plot_fitness_curves(
         fitness_dfs=fitness_dfs,
         hp_values=hp_values,
         hp_name=hp_name,
         title=plot_title,
     )
-
-    # plt.show()
     plt.savefig('graphs/n_queens_rhc_fitness.png')
     plt.clf()
 
-    return fitness_means_dfs
+    return fitness_dfs
 
 
 def n_queens_sa(nq_problem, initial_state, max_iters=np.inf, num_runs=20, verbose=False):
@@ -127,18 +125,16 @@ def n_queens_sa(nq_problem, initial_state, max_iters=np.inf, num_runs=20, verbos
 
     # generate plots
     plot_title = "N-Queens SA: fitness vs. iterations"
-    fitness_means_dfs = plotting.plot_fitness_curves(
+    plotting.plot_fitness_curves(
         fitness_dfs=fitness_dfs,
         hp_values=hp_values_strings,
         hp_name=hp_name,
         title=plot_title,
     )
-
-    # plt.show()
     plt.savefig('graphs/n_queens_sa_fitness.png')
     plt.clf()
 
-    return fitness_means_dfs
+    return fitness_dfs
 
 
 def n_queens_ga(nq_problem, max_iters=np.inf, num_runs=20, verbose=False):
@@ -192,18 +188,16 @@ def n_queens_ga(nq_problem, max_iters=np.inf, num_runs=20, verbose=False):
         + str(population_size) + " pop, " \
         + str(mutation_prob) + " mut prob, " \
         + ": fit vs iter"
-    fitness_means_dfs = plotting.plot_fitness_curves(
+    plotting.plot_fitness_curves(
         fitness_dfs=fitness_dfs,
         hp_values=hp_values,
         hp_name=hp_name,
         title=plot_title,
     )
-
-    # plt.show()
     plt.savefig('graphs/n_queens_ga_fitness.png')
     plt.clf()
 
-    return fitness_means_dfs
+    return fitness_dfs
 
 
 def main():
@@ -227,16 +221,26 @@ def main():
     initial_state = np.random.randint(0, length, size=length)
 
     # randomized hill climbing
-    rhc_fitness = n_queens_rhc(nq_problem, initial_state, max_iters, num_runs, verbose)
+    rhc_fitness_dfs = n_queens_rhc(nq_problem, initial_state, max_iters, num_runs, verbose)
     print('---')
 
     # simulated annealing
-    sa_fitness = n_queens_sa(nq_problem, initial_state, max_iters, num_runs, verbose)
+    sa_fitness_dfs = n_queens_sa(nq_problem, initial_state, max_iters, num_runs, verbose)
     print('---')
 
     # genetic algorithm
-    ga_fitness = n_queens_ga(nq_problem, max_iters, num_runs, verbose)
+    ga_fitness_dfs = n_queens_ga(nq_problem, max_iters, num_runs, verbose)
     print('---')
+
+    # mimic algorithm
+
+    # compare algorithm performance
+    plotting.compare_algos(
+        problem_name='n_queens',
+        rhc_dfs=rhc_fitness_dfs,
+        sa_dfs=sa_fitness_dfs,
+        ga_dfs=ga_fitness_dfs,
+    )
 
 
 if __name__ == "__main__":
