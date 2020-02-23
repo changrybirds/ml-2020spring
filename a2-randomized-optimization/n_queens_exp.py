@@ -32,7 +32,7 @@ def queens_max(state):
 
 def n_queens_rhc(nq_problem, initial_state, max_iters=np.inf, num_runs=20, verbose=False):
     hp_name = 'restarts'
-    hp_values = [10, 20, 30]
+    hp_values = [10, 20, 30, 40, 50]
 
     # run for each hp value and append results to list
 
@@ -209,7 +209,7 @@ def n_queens_ga(nq_problem, max_iters=np.inf, num_runs=20, verbose=False):
 def main():
     verbose = True
     num_runs = 20
-    max_iters = 1000
+    max_iters = 500
 
     # define custom fitness function to maximize instead of minimize
     fitness_fn = mlrose.CustomFitness(queens_max)
@@ -236,6 +236,7 @@ def main():
 
     # genetic algorithm
     ga_fitness = n_queens_ga(nq_problem, max_iters, num_runs, verbose)
+    print('---')
 
 
 if __name__ == "__main__":
