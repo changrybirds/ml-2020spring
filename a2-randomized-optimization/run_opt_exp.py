@@ -1,7 +1,13 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+
+from time import time
 
 import mlrose_hiive as mlrose
+
+import plotting
+import opt_algos
 
 
 # redefine n-queens as a maximization problem
@@ -25,39 +31,49 @@ def queens_max(state):
     return fitness_cnt
 
 
-def n_queens_exp(verbose=False):
+def n_queens_exp(verbose=False, num_runs=20):
     fitness_fn = mlrose.CustomFitness(queens_max)  # define fitness function
 
     # define optimization problem
+    length = 16
     nq_problem = mlrose.DiscreteOpt(
-        length=8,
+        length=length,
         fitness_fn=fitness_fn,
         maximize=True,
-        max_val=8,
+        max_val=length,
     )
 
     # set initial state
-    initial_state = np.random.randint(0, 8, size=8)
-    if verbose: print(initial_state)
+    initial_state = np.random.randint(0, length, size=length)
+    # if verbose: print(initial_state)
 
-    # set decay schedule for SA
-    sa_decay_schedule = mlrose.ExpDecay()
-
-    # run SA
-    best_state, best_fitness, fitness_curve = mlrose.simulated_annealing(
-        nq_problem,
-        schedule=sa_decay_schedule,
+    # set decay schedule for SA and begin runs
+    decay_schedule = mlrose.ExpDecay()
+    fitness_data, run_times = opt_algos.simulated_annealing(
+        problem=nq_problem,
+        init_state=initial_state,
+        schedule=decay_schedule,
         max_attempts=10,
         max_iters=1000,
-        init_state=initial_state,
         curve=True,
-        random_state=313,
+        num_runs=num_runs,
     )
 
-    if verbose:
-        print(best_state)
-        print(best_fitness)
-        print(fitness_curve)
+    # print avg run time
+    avg_run_time = np.average(run_times)
+    print("N-Queens - SA avg run time:", avg_run_time)
+
+    # generate plots
+    plotting.plot_fitness_curves(
+        fitness_data,
+        title="SA for N-Queens: fitness vs. iterations",
+    )
+
+    plt.show()
+    plt.savefig('graphs/nqueens_sa_fitness.png')
+    plt.clf()
+
+    # if verbose: print(fitness_data.tail())
 
 
 def flipflop_exp():
@@ -69,7 +85,7 @@ def tsm_experiment():
 
 
 def main():
-    n_queens_exp(verbose=True)
+    n_queens_exp(verbose=True, num_runs=20)
 
 
 if __name__ == "__main__":
