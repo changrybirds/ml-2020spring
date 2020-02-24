@@ -64,8 +64,7 @@ def n_queens_rhc(nq_problem, initial_state, max_iters=np.inf, num_runs=20, verbo
         fitness_data = fitness_data.fillna(method='ffill')
         fitness_dfs.append(fitness_data)
 
-
-                # calculate and print avg time per run# print avg run time
+        # calculate and print avg time per run
         avg_run_time = np.average(run_times)
         print("N-Queens - RHC avg run time,", hp_value, hp_name, ":", avg_run_time)
 
@@ -116,7 +115,6 @@ def n_queens_sa(nq_problem, initial_state, max_iters=np.inf, num_runs=20, verbos
         fitness_data.columns = runs
         fitness_data = fitness_data.fillna(method='ffill')
         fitness_dfs.append(fitness_data)
-
 
         # calculate and print avg time per run
         avg_run_time = np.average(run_times)
