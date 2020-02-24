@@ -239,7 +239,7 @@ def main():
     num_runs = 20
     max_iters = 1000
 
-    # define custom fitness function to maximize instead of minimize
+    # define flip flop fitness function to maximize
     fitness_fn = mlrose.FlipFlop()
 
     # define optimization problem
