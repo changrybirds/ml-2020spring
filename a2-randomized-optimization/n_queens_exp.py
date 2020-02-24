@@ -107,7 +107,6 @@ def n_queens_sa(nq_problem, initial_state, max_iters=np.inf, num_runs=20, verbos
                 max_attempts=10,
                 max_iters=max_iters,
                 curve=True,
-                # random_state=313,
             )
             run_time = time() - run_t0
             run_times[run] = run_time
@@ -139,7 +138,7 @@ def n_queens_sa(nq_problem, initial_state, max_iters=np.inf, num_runs=20, verbos
 
 def n_queens_ga(nq_problem, max_iters=np.inf, num_runs=20, verbose=False):
     # HP to vary
-    hp_name = 'pop_breed_percent'
+    hp_name = 'pop_mate_pct'
     hp_values = [0.25, 0.50, 0.75]
 
     # other hyperparameters for genetic algorithm
@@ -153,7 +152,7 @@ def n_queens_ga(nq_problem, max_iters=np.inf, num_runs=20, verbose=False):
     runs = np.arange(num_runs)
 
     for hp_value in hp_values:
-        pop_breed_percent = hp_value  # set varied HP at beginning of loop
+        pop_mate_pct = hp_value  # set varied HP at beginning of loop
 
         run_times = np.zeros(num_runs)
         fitness_data = pd.DataFrame()
@@ -163,7 +162,7 @@ def n_queens_ga(nq_problem, max_iters=np.inf, num_runs=20, verbose=False):
             best_state, best_fitness, fitness_curve = mlrose.genetic_alg(
                 problem=nq_problem,
                 pop_size=population_size,
-                pop_breed_percent=pop_breed_percent,
+                pop_breed_percent=pop_mate_pct,
                 elite_dreg_ratio=elite_dreg_ratio,
                 mutation_prob=mutation_prob,
                 max_attempts=10,
@@ -195,6 +194,64 @@ def n_queens_ga(nq_problem, max_iters=np.inf, num_runs=20, verbose=False):
         title=plot_title,
     )
     plt.savefig('graphs/n_queens_ga_fitness.png')
+    plt.clf()
+
+    return fitness_dfs
+
+
+def n_queens_mimic(nq_problem, max_iters=np.inf, num_runs=20, verbose=False):
+    # HP to vary
+    hp_name = 'keep_pct'
+    hp_values = [0.2, 0.4, 0.6]
+
+    # other hyperparameters for genetic algorithm
+    population_size = 200
+
+    # run for each hp value and append results to list
+
+    fitness_dfs = []
+    runs = np.arange(num_runs)
+
+    for hp_value in hp_values:
+        keep_pct = hp_value  # set varied HP at beginning of loop
+
+        run_times = np.zeros(num_runs)
+        fitness_data = pd.DataFrame()
+
+        for run in runs:
+            run_t0 = time()
+            best_state, best_fitness, fitness_curve = mlrose.mimic(
+                problem=nq_problem,
+                pop_size=population_size,
+                keep_pct=keep_pct,
+                max_attempts=10,
+                max_iters=max_iters,
+                curve=True,
+            )
+            run_time = time() - run_t0
+            run_times[run] = run_time
+
+            fitness_data = pd.concat([fitness_data, pd.DataFrame(fitness_curve)], axis=1, sort=False)
+
+        fitness_data.columns = runs
+        fitness_data = fitness_data.fillna(method='ffill')
+        fitness_dfs.append(fitness_data)
+
+        # calculate and print avg time per run
+        avg_run_time = np.average(run_times)
+        print("N-Queens - MIMIC avg run time,", hp_value, hp_name, ":", avg_run_time)
+
+    # generate plots
+    plot_title = "N-Queens MIMIC - " \
+        + str(population_size) + " pop, " \
+        + ": fit vs iter"
+    plotting.plot_fitness_curves(
+        fitness_dfs=fitness_dfs,
+        hp_values=hp_values,
+        hp_name=hp_name,
+        title=plot_title,
+    )
+    plt.savefig('graphs/n_queens_mimic_fitness.png')
     plt.clf()
 
     return fitness_dfs
@@ -232,7 +289,9 @@ def main():
     ga_fitness_dfs = n_queens_ga(nq_problem, max_iters, num_runs, verbose)
     print('---')
 
-    # mimic algorithm
+    # MIMIC algorithm
+    mimic_fitness_dfs = n_queens_mimic(nq_problem, max_iters, num_runs, verbose)
+    print('---')
 
     # compare algorithm performance
     plotting.compare_algos(
@@ -240,6 +299,7 @@ def main():
         rhc_dfs=rhc_fitness_dfs,
         sa_dfs=sa_fitness_dfs,
         ga_dfs=ga_fitness_dfs,
+        mimic_dfs=mimic_fitness_dfs,
     )
 
 
