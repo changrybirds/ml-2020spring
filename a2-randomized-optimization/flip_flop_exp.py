@@ -250,6 +250,8 @@ def main():
         maximize=True,
     )
 
+    ff_problem.set_mimic_fast_mode(True)
+
     # set initial state
     initial_state = np.random.randint(0, 2, size=length)
 
@@ -266,7 +268,7 @@ def main():
     print('---')
 
     # MIMIC algorithm
-    mimic_fitness_dfs = flip_flop_mimic(ff_problem.set_mimic_fast_mode(True), max_iters, num_runs, verbose)
+    mimic_fitness_dfs = flip_flop_mimic(ff_problem, max_iters, num_runs, verbose)
     print('---')
 
     # compare algorithm performance
