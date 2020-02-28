@@ -32,7 +32,7 @@ def queens_max(state):
 
 def n_queens_rhc(nq_problem, initial_state, max_iters=np.inf, num_runs=20, verbose=False):
     hp_name = 'restarts'
-    hp_values = [10, 20, 30, 40, 50]
+    hp_values = [10, 20, 30]
 
     # run for each hp value and append results to list
 
@@ -265,12 +265,13 @@ def main():
 
     # define optimization problem
     length = 16
-    nq_problem = mlrose.DiscreteOpt(
+    nq_problem = mlrose.QueensOpt(
         length=length,
         fitness_fn=fitness_fn,
         maximize=True,
-        max_val=length,
     )
+
+    nq_problem.set_mimic_fast_mode(True)
 
     # set initial state
     initial_state = np.random.randint(0, length, size=length)
