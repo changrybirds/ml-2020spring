@@ -54,6 +54,12 @@ def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
     opt_labels = opt_k_means.labels_
 
     # using optimal no. clusters, examine label distribution - no dimensionality reduction
+    df = X.copy(deep=True)
+    df['cluster'] = opt_labels
+    df['y'] = y
+    grouped = df.groupby(['cluster', 'y']).count().iloc[:, 0]
+
+    print(dataset_name, '\n', grouped, '\n')
 
 
 def run_experiment(dataset_name, X, y, verbose=False):

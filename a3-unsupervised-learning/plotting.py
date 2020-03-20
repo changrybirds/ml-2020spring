@@ -10,11 +10,11 @@ def plot_elbow_and_silhouette(sums_squared_distances, silhouette_scores, K_vals,
 
     ax1.set_xlabel("Num clusters")
     ax1.set_ylabel("Sum of squared distances")
-    line1 = ax1.plot(K_vals, sums_squared_distances, color='r', label="Elbow method")
+    line1 = ax1.plot(K_vals, sums_squared_distances, color='r', label="Elbow method", marker='.')
 
     ax2 = ax1.twinx()
     ax2.set_ylabel("Silhouette score")
-    line2 = ax2.plot(K_vals, silhouette_scores, color='b', label="Silhouette score")
+    line2 = ax2.plot(K_vals, silhouette_scores, color='b', label="Silhouette score", marker='.')
 
     lines = line1 + line2
     labels = [l.get_label() for l in lines]
