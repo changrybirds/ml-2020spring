@@ -17,7 +17,7 @@ def plot_label_accuracy():
 
 def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
     # find optimal number of clusters and plot silhouette score
-    K_vals = np.arange(2, 8)
+    K_vals = np.arange(2, 11)
     silhouette_scores = []
     sums_squared_distances = []
 
@@ -46,7 +46,7 @@ def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
     # choose optimal number of clusters
     # optimal_k = 3
     optimal_k = K_vals[np.argmax(silhouette_scores)]
-    if verbose: print optimal_k
+    if verbose: print(optimal_k)
 
     opt_k_means = KMeans(n_clusters=optimal_k, random_state=RANDOM_SEED)
     opt_k_means.fit(X)

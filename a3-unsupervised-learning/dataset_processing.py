@@ -55,6 +55,7 @@ def process_abalone():
 
     # encode data
     X = pd.get_dummies(X)
+    X = pd.DataFrame(StandardScaler().fit_transform(X.values), columns=X.columns)
 
     return X, y
 
@@ -80,6 +81,7 @@ def process_online_shopping():
 
     # encode data
     X = pd.get_dummies(X)
+    X = pd.DataFrame(StandardScaler().fit_transform(X.values), columns=X.columns)
 
     return X, y
 
