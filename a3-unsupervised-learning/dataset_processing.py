@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, MinMaxScaler
 from sklearn.model_selection import cross_val_score, train_test_split, learning_curve
 
 from time import time
@@ -11,7 +11,7 @@ SEED_VAL = 313
 # HOLDOUT_SIZE = 0.3
 
 
-# not needed for these datasets
+# not needed for these datasets, can use get_dummies instead
 def encode_data(df, cols):
     """
     Parameters:
@@ -27,14 +27,6 @@ def encode_data(df, cols):
     encoded = oh_enc.fit_transform(transformed)
 
     return encoded
-
-
-def scale_data(X):
-    X = X.values.reshape(-1, 1)
-    scaler = StandardScaler()
-    scaled = scaler.fit_transform(X)
-
-    return scaled
 
 
 def process_abalone():
@@ -55,7 +47,7 @@ def process_abalone():
 
     # encode data
     X = pd.get_dummies(X)
-    X = pd.DataFrame(StandardScaler().fit_transform(X.values), columns=X.columns)
+    X = pd.DataFrame(MinMaxScaler().fit_transform(X.values), columns=X.columns)
 
     return X, y
 
@@ -81,7 +73,7 @@ def process_online_shopping():
 
     # encode data
     X = pd.get_dummies(X)
-    X = pd.DataFrame(StandardScaler().fit_transform(X.values), columns=X.columns)
+    X = pd.DataFrame(MinMaxScaler().fit_transform(X.values), columns=X.columns)
 
     return X, y
 
