@@ -22,3 +22,20 @@ def plot_elbow_and_silhouette(sums_squared_distances, silhouette_scores, K_vals,
 
     plt.tight_layout()
     return plt
+
+
+def plot_bic_scores(bic_scores, n_components_vals, title):
+    fig, ax1 = plt.subplots()
+    plt.grid()
+    plt.title(title)
+
+    ax1.set_xlabel("Num components")
+    ax1.set_ylabel("BIC score")
+    line1 = ax1.plot(n_components_vals, bic_scores, color='r', label="BIC score", marker='.')
+
+    lines = line1
+    labels = [l.get_label() for l in lines]
+    ax1.legend(lines, labels, loc='best')
+
+    plt.tight_layout()
+    return plt

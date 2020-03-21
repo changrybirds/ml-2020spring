@@ -12,10 +12,10 @@ RANDOM_SEED = 313
 
 
 def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
-    # find optimal number of clusters and plot silhouette score
+    # find optimal number of clusters
     K_vals = np.arange(2, 11)
-    silhouette_scores = []
     sums_squared_distances = []
+    silhouette_scores = []
 
     for k in K_vals:
         k_means = KMeans(n_clusters=k, random_state=RANDOM_SEED)
@@ -40,7 +40,6 @@ def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
     plt.clf()
 
     # choose optimal number of clusters
-    # optimal_k = 3
     optimal_k = K_vals[np.argmax(silhouette_scores)]
     if verbose: print(optimal_k)
 
@@ -60,14 +59,40 @@ def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
     print(dataset_name, '\n', grouped, '\n')
 
 
+def run_expect_max(dataset_name, X, y, dim_reduction=None, verbose=False):
+    # find optimal number of components
+    n_components_vals = np.arange(2, 11)
+    bic_scores = []
+
+    for n_components in n_components_vals:
+        gm = GaussianMixture(n_components=n_components, random_state=RANDOM_SEED)
+        gm.fit(X)
+        y_hat = gm.predict(X)
+
+        # calculate sum of squared distances and silhouette score
+        bic_scores.append(gm.bic(X))
+
+    # plot BIC scores
+    bic_scores = np.array(bic_scores)
+
+    if dim_reduction is None: dim_reduction = 'no_dr'
+    plot_title = "EM w/ " + dim_reduction + " for " + dataset_name + ": BIC scores\n"
+    plotting.plot_bic_scores(
+        bic_scores, n_components_vals, title=plot_title)
+    plt.savefig('graphs/em_' + dim_reduction + '_' + dataset_name + '_bic.png')
+    plt.clf()
+
+
 def abalone(verbose=False):
     X, y = data_proc.process_abalone()
-    run_k_means('abalone', X, y, verbose=verbose)
+    # run_k_means('abalone', X, y, verbose=verbose)
+    run_expect_max('abalone', X, y, verbose=verbose)
 
 
 def online_shopping(verbose=False):
     X, y = data_proc.process_online_shopping()
-    run_k_means('shopping', X, y, verbose=verbose)
+    # run_k_means('shopping', X, y, verbose=verbose)
+    run_expect_max('shopping', X, y, verbose=verbose)
 
 
 def main():
