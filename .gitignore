@@ -1,5 +1,6 @@
 # Exclude graphs
 graphs/
+tmp/
 
 # macOS .DS_Store extension
 .DS_Store

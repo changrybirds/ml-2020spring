@@ -11,10 +11,6 @@ import plotting
 RANDOM_SEED = 313
 
 
-def plot_label_accuracy():
-    pass
-
-
 def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
     # find optimal number of clusters and plot silhouette score
     K_vals = np.arange(2, 11)
@@ -59,22 +55,19 @@ def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
     df['y'] = y
     grouped = df.groupby(['cluster', 'y']).count().iloc[:, 0]
 
+    csv_path = 'tmp/kmeans_' + dim_reduction + '_' + dataset_name + '.csv'
+    grouped.to_csv(csv_path, header=True)
     print(dataset_name, '\n', grouped, '\n')
-
-
-def run_experiment(dataset_name, X, y, verbose=False):
-    # k-means
-    run_k_means(dataset_name, X, y, verbose=verbose)
 
 
 def abalone(verbose=False):
     X, y = data_proc.process_abalone()
-    run_experiment('abalone', X, y, verbose=verbose)
+    run_k_means('abalone', X, y, verbose=verbose)
 
 
 def online_shopping(verbose=False):
     X, y = data_proc.process_online_shopping()
-    run_experiment('shopping', X, y, verbose=verbose)
+    run_k_means('shopping', X, y, verbose=verbose)
 
 
 def main():
