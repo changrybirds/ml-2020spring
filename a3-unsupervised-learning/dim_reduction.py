@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.decomposition import PCA, FastICA
 from sklearn.random_projection import GaussianRandomProjection
 from scipy.stats import kurtosis
@@ -121,18 +122,31 @@ def run_rp(dataset_name, X, y, verbose=False):
     plt.clf()
 
 
+def run_dt_fi(dataset_name, X, y, verbose=False):
+    dtclf = DecisionTreeClassifier(random_state=RANDOM_SEED)
+    dtclf.fit(X, y)
+    fi = dtclf.feature_importances_
+
+    fi_df = pd.DataFrame(fi, index=X.columns)
+    print(fi_df)
+    csv_path = 'tmp/dt_fi_' + dataset_name + '.csv'
+    fi_df.to_csv(csv_path, header=True)
+
+
 def abalone(verbose=False):
     X, y = data_proc.process_abalone(scaler='minmax')
-    # run_pca('abalone', X, y, verbose=verbose)
-    # run_ica('abalone', X, y, verbose=verbose)
+    run_pca('abalone', X, y, verbose=verbose)
+    run_ica('abalone', X, y, verbose=verbose)
     run_rp('abalone', X, y, verbose=verbose)
+    run_dt_fi('abalone', X, y, verbose=verbose)
 
 
 def online_shopping(verbose=False):
     X, y = data_proc.process_online_shopping(scaler='minmax')
-    # run_pca('shopping', X, y, verbose=verbose)
-    # run_ica('shopping', X, y, verbose=verbose)
+    run_pca('shopping', X, y, verbose=verbose)
+    run_ica('shopping', X, y, verbose=verbose)
     run_rp('shopping', X, y, verbose=verbose)
+    run_dt_fi('shopping', X, y, verbose=verbose)
 
 
 def main():
