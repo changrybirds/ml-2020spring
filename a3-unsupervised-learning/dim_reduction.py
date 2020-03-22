@@ -19,6 +19,7 @@ def run_pca(dataset_name, X, y, verbose=False):
     # attempt PCA for various dimensionality levels
     n_components_vals = np.arange(1, len(X.columns))
     cume_explained_variances = []
+
     for n_components in n_components_vals:
         pca = PCA(n_components=n_components, random_state=RANDOM_SEED)
         X_pca = pca.fit_transform(X)
@@ -54,13 +55,14 @@ def run_ica(dataset_name, X, y, verbose=False):
     # attempt ICA for various dimensionality levels
     n_components_vals = np.arange(1, len(X.columns))
     kurtosis_vals = []
+
     for n_components in n_components_vals:
         ica = FastICA(n_components=n_components, random_state=RANDOM_SEED)
         X_ica = ica.fit_transform(X)
 
         # calculate cumulative explained variance
         kurtosis_val = np.average(kurtosis(ica.components_, fisher=False))
-        if verbose: print(kurtosis_val)
+        # if verbose: print(kurtosis_val)
         kurtosis_vals.append(kurtosis_val)
 
     # plot cumulative explained variance
@@ -112,8 +114,9 @@ def run_rp(dataset_name, X, y, verbose=False):
         n_components = 3
     else:
         n_components = 25
+
     # plot reconstruction losses
-    if verbose: print(recon_losses[0])
+    # if verbose: print(recon_losses[0])
     recon_losses = np.array(recon_losses)
     plot_title = "RP for " + dataset_name + ": Reconstruction loss\n"
     plotting.plot_recon_loss(
@@ -128,7 +131,7 @@ def run_dt_fi(dataset_name, X, y, verbose=False):
     fi = dtclf.feature_importances_
 
     fi_df = pd.DataFrame(fi, index=X.columns)
-    print(fi_df)
+    # if verbose: print(fi_df)
     csv_path = 'tmp/dt_fi_' + dataset_name + '.csv'
     fi_df.to_csv(csv_path, header=True)
 
