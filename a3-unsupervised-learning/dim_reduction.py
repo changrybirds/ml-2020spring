@@ -86,32 +86,37 @@ def run_ica(dataset_name, X, y, verbose=False):
 
 def run_rp(dataset_name, X, y, verbose=False):
     # attempt RP for various dimensionality levels
+    n_components_vals = np.arange(1, len(X.columns))
     iterations = np.arange(1, 15)
     recon_losses = []
+
+    for n_components in n_components_vals:
+        # see how reconstruction loss changes across iterations
+        tmp_recon_losses = []
+        for i in iterations:
+            rp = GaussianRandomProjection(n_components=n_components, random_state=i)
+            X_rp = rp.fit_transform(X)
+
+            # calculate reconstruction error
+            X_comp_pinv = np.linalg.pinv(rp.components_.T)
+            X_projection = np.dot(X_rp, X_comp_pinv)
+            recon_loss = ((X - X_projection) ** 2).mean()
+            # if verbose: print(recon_loss.shape)
+            tmp_recon_losses.append(np.sum(recon_loss))
+
+        tmp_avg_recon_loss = np.mean(np.array(tmp_recon_losses))
+        recon_losses.append(tmp_avg_recon_loss)
 
     if dataset_name == 'abalone':
         n_components = 3
     else:
         n_components = 25
-
-    # see how reconstruction loss changes across iterations
-    for i in iterations:
-        rp = GaussianRandomProjection(n_components=n_components)
-        X_rp = rp.fit_transform(X)
-
-        # calculate reconstruction error
-        X_comp_pinv = np.linalg.pinv(rp.components_.T)
-        X_projection = np.dot(X_rp, X_comp_pinv)
-        recon_loss = ((X - X_projection) ** 2).mean()
-        # if verbose: print(recon_loss.shape)
-        recon_losses.append(np.sum(recon_loss))
-
     # plot reconstruction losses
     if verbose: print(recon_losses[0])
     recon_losses = np.array(recon_losses)
     plot_title = "RP for " + dataset_name + ": Reconstruction loss\n"
     plotting.plot_recon_loss(
-        recon_losses, iterations, title=plot_title)
+        recon_losses, n_components_vals, title=plot_title)
     plt.savefig('graphs/rp_' + dataset_name + '_recon_loss.png')
     plt.clf()
 
