@@ -13,7 +13,7 @@ RANDOM_SEED = 313
 
 def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
     # find optimal number of clusters
-    K_vals = np.arange(2, len(X.columns))
+    K_vals = np.arange(2, 15)
     sums_squared_distances = []
     silhouette_scores = []
 
@@ -61,7 +61,7 @@ def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
 
 def run_expect_max(dataset_name, X, y, dim_reduction=None, verbose=False):
     # find optimal number of components
-    n_components_vals = np.arange(2, len(X.columns))
+    n_components_vals = np.arange(2, 15)
     ll_scores = []
     bic_scores = []
 
