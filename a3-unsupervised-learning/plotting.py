@@ -43,3 +43,48 @@ def plot_ll_and_bic(ll_scores, bic_scores, n_components_vals, title):
 
     plt.tight_layout()
     return plt
+
+
+def plot_cume_explained_variance(cume_explained_variances, n_components_vals, title):
+    fig, ax1 = plt.subplots()
+    plt.grid()
+    plt.title(title)
+
+    ax1.set_xlabel("Num components")
+    ax1.set_ylabel("Cumulative explained variance")
+    line1 = ax1.plot(
+        n_components_vals, cume_explained_variances,
+        color='r', label="Cumulative explained variance", marker='.')
+
+    plt.tight_layout()
+    return plt
+
+
+def plot_kurtosis(kurtosis_vals, n_components_vals, title):
+    fig, ax1 = plt.subplots()
+    plt.grid()
+    plt.title(title)
+
+    ax1.set_xlabel("Num components")
+    ax1.set_ylabel("Kurtosis")
+    line1 = ax1.plot(
+        n_components_vals, kurtosis_vals,
+        color='r', label="Kurtosis", marker='.')
+
+    plt.tight_layout()
+    return plt
+
+
+def plot_recon_loss(recon_errors, n_components_vals, title):
+    fig, ax1 = plt.subplots()
+    plt.grid()
+    plt.title(title)
+
+    ax1.set_xlabel("Num components")
+    ax1.set_ylabel("Reconstruction error")
+    line1 = ax1.plot(
+        n_components_vals, recon_errors,
+        color='r', label="Reconstruction error", marker='.')
+
+    plt.tight_layout()
+    return plt
