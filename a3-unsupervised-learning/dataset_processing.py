@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, MinMaxScaler
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, MinMaxScaler, StandardScaler
 from sklearn.model_selection import cross_val_score, train_test_split, learning_curve
 
 from time import time
@@ -29,7 +29,7 @@ def encode_data(df, cols):
     return encoded
 
 
-def process_abalone():
+def process_abalone(scaler='minmax'):
     abalone_names = [
         'sex', 'length', 'diameter', 'height', 'whole_weight',
         'shucked_weight', 'viscera_weight', 'shell_weight', 'rings'
@@ -47,12 +47,15 @@ def process_abalone():
 
     # encode data
     X = pd.get_dummies(X)
-    X = pd.DataFrame(MinMaxScaler().fit_transform(X.values), columns=X.columns)
+    if scaler == 'minmax':
+        X = pd.DataFrame(MinMaxScaler().fit_transform(X.values), columns=X.columns)
+    else:
+        X = pd.DataFrame(StandardScaler().fit_transform(X.values), columns=X.columns)
 
     return X, y
 
 
-def process_online_shopping():
+def process_online_shopping(scaler='minmax'):
     df = pd.read_csv('./online_shoppers_intention.csv')
     df = df.dropna()
 
@@ -73,7 +76,10 @@ def process_online_shopping():
 
     # encode data
     X = pd.get_dummies(X)
-    X = pd.DataFrame(MinMaxScaler().fit_transform(X.values), columns=X.columns)
+    if scaler == 'minmax':
+        X = pd.DataFrame(MinMaxScaler().fit_transform(X.values), columns=X.columns)
+    elif scaler == 'standard':
+        X = pd.DataFrame(StandardScaler().fit_transform(X.values), columns=X.columns)
 
     return X, y
 

@@ -104,13 +104,13 @@ def run_expect_max(dataset_name, X, y, dim_reduction=None, verbose=False):
 
 
 def abalone(verbose=False):
-    X, y = data_proc.process_abalone()
+    X, y = data_proc.process_abalone(scaler='minmax')
     # run_k_means('abalone', X, y, verbose=verbose)
     run_expect_max('abalone', X, y, verbose=verbose)
 
 
 def online_shopping(verbose=False):
-    X, y = data_proc.process_online_shopping()
+    X, y = data_proc.process_online_shopping(scaler='minmax')
     # run_k_means('shopping', X, y, verbose=verbose)
     run_expect_max('shopping', X, y, verbose=verbose)
 
