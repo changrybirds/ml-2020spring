@@ -75,15 +75,15 @@ def plot_kurtosis(kurtosis_vals, n_components_vals, title):
     return plt
 
 
-def plot_recon_loss(recon_errors, n_components_vals, title):
+def plot_recon_loss(recon_errors, iteration_vals, title):
     fig, ax1 = plt.subplots()
     plt.grid()
     plt.title(title)
 
-    ax1.set_xlabel("Num components")
+    ax1.set_xlabel("Iteration")
     ax1.set_ylabel("Reconstruction error")
     line1 = ax1.plot(
-        n_components_vals, recon_errors,
+        iteration_vals, recon_errors,
         color='r', label="Reconstruction error", marker='.')
 
     plt.tight_layout()
