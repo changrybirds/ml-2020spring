@@ -13,7 +13,7 @@ RANDOM_SEED = 313
 
 def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
     # find optimal number of clusters
-    K_vals = np.arange(2, 15)
+    K_vals = np.arange(2, len(X.columns))
     sums_squared_distances = []
     silhouette_scores = []
 
@@ -61,7 +61,7 @@ def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
 
 def run_expect_max(dataset_name, X, y, dim_reduction=None, verbose=False):
     # find optimal number of components
-    n_components_vals = np.arange(2, 15)
+    n_components_vals = np.arange(2, len(X.columns))
     ll_scores = []
     bic_scores = []
 
@@ -105,13 +105,13 @@ def run_expect_max(dataset_name, X, y, dim_reduction=None, verbose=False):
 
 def abalone(verbose=False):
     X, y = data_proc.process_abalone(scaler='minmax')
-    # run_k_means('abalone', X, y, verbose=verbose)
+    run_k_means('abalone', X, y, verbose=verbose)
     run_expect_max('abalone', X, y, verbose=verbose)
 
 
 def online_shopping(verbose=False):
     X, y = data_proc.process_online_shopping(scaler='minmax')
-    # run_k_means('shopping', X, y, verbose=verbose)
+    run_k_means('shopping', X, y, verbose=verbose)
     run_expect_max('shopping', X, y, verbose=verbose)
 
 
