@@ -49,6 +49,13 @@ def run_pca(dataset_name, X, y, verbose=False):
     X_projected = opt_pca.inverse_transform(opt_X_pca)
     recon_loss = ((X - X_projected) ** 2).mean()
     print(dataset_name, ": PCA reconstruction loss for k =", optimal_comp, ":", np.sum(recon_loss))
+    opt_X_pca = pd.DataFrame(opt_X_pca)
+
+    # run K-means
+    clustering.run_k_means(dataset_name, opt_X_pca, y, dim_reduction='pca', verbose=verbose)
+
+    # run EM
+    clustering.run_expect_max(dataset_name, opt_X_pca, y, dim_reduction='pca', verbose=verbose)
 
 
 def run_ica(dataset_name, X, y, verbose=False):
@@ -85,6 +92,13 @@ def run_ica(dataset_name, X, y, verbose=False):
     X_projected = opt_ica.inverse_transform(opt_X_ica)
     recon_loss = ((X - X_projected) ** 2).mean()
     print(dataset_name, ": ICA reconstruction loss for k =", optimal_comp, ":", np.sum(recon_loss))
+    opt_X_ica = pd.DataFrame(opt_X_ica)
+
+    # run K-means
+    clustering.run_k_means(dataset_name, opt_X_ica, y, dim_reduction='ica', verbose=verbose)
+
+    # run EM
+    clustering.run_expect_max(dataset_name, opt_X_ica, y, dim_reduction='ica', verbose=verbose)
 
 
 def run_rp(dataset_name, X, y, verbose=False):
@@ -124,16 +138,43 @@ def run_rp(dataset_name, X, y, verbose=False):
     plt.savefig('graphs/rp_' + dataset_name + '_recon_loss.png')
     plt.clf()
 
+    grp = GaussianRandomProjection(n_components=n_components, random_state=RANDOM_SEED)
+    X_rp = grp.fit_transform(X)
+    X_rp = pd.DataFrame(X_rp)
+
+    # run K-means
+    clustering.run_k_means(dataset_name, X_rp, y, dim_reduction='rp', verbose=verbose)
+
+    # run EM
+    clustering.run_expect_max(dataset_name, X_rp, y, dim_reduction='rp', verbose=verbose)
+
 
 def run_dt_fi(dataset_name, X, y, verbose=False):
     dtclf = DecisionTreeClassifier(random_state=RANDOM_SEED)
     dtclf.fit(X, y)
     fi = dtclf.feature_importances_
 
-    fi_df = pd.DataFrame(fi, index=X.columns)
+    fi_df = pd.DataFrame(fi, index=X.columns, columns=['feature_importance'])
+    fi_df = fi_df.sort_values('feature_importance', ascending=False)
     # if verbose: print(fi_df)
+
     csv_path = 'tmp/dt_fi_' + dataset_name + '.csv'
     fi_df.to_csv(csv_path, header=True)
+
+    # slice top n features
+    if dataset_name == 'abalone':
+        num_features = 3
+    else:
+        num_features = 25
+
+    selected_features = fi_df.index[0:num_features].tolist()
+    X_selected = X[selected_features]
+
+    # run K-means
+    clustering.run_k_means(dataset_name, X_selected, y, dim_reduction='dt_fi', verbose=verbose)
+
+    # run EM
+    clustering.run_expect_max(dataset_name, X_selected, y, dim_reduction='dt_fi', verbose=verbose)
 
 
 def abalone(verbose=False):
