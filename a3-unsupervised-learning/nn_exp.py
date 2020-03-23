@@ -91,7 +91,7 @@ def run_experiment(dataset_name, exp_name, X_train, X_test, y_train, y_test, ver
     if verbose: print(lc_df.idxmax())
 
     plotting.plot_iterative_lc(
-        lc_df, dataset_name + ': learning curves (iterations)', max_iter_range=max_iter_range)
+        lc_df, dataset_name + ' (' + exp_name + '): learning curves (iterations)', max_iter_range=max_iter_range)
 
     if show_plots:
         plt.show()
@@ -120,7 +120,7 @@ def run_experiment(dataset_name, exp_name, X_train, X_test, y_train, y_test, ver
 
     plotting.plot_model_complexity_charts(
         hidden_layer_sizes_mc['train'], hidden_layer_sizes_mc['cv'],
-        dataset_name + ': MCC for ' + hp, hp)
+        dataset_name + ' (' + exp_name + '): MCC for ' + hp, hp)
 
     if show_plots:
         plt.show()
@@ -141,7 +141,7 @@ def run_experiment(dataset_name, exp_name, X_train, X_test, y_train, y_test, ver
 
     plotting.plot_model_complexity_charts(
         learning_rate_init_mc['train'], learning_rate_init_mc['cv'],
-        dataset_name + ': MCC for ' + hp, hp, xscale_type='log', basex=10)
+        dataset_name + ' (' + exp_name + '): MCC for ' + hp, hp, xscale_type='log', basex=10)
 
     if show_plots:
         plt.show()
