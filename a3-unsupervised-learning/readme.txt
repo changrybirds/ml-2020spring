@@ -18,7 +18,7 @@ Included scripts runnable from command line:
     - `dim_reduction.py` : runs PCA, ICA, RP, and DT (feature importances)
         also re-runs clustering experiments with reduced-dimensionality X's
         (parts 2 and 3)
-    - `nn_dim_reduction.py` : runs NN problems (parts 4 and 5)
+    - `nn_exp.py` : runs NN problems (parts 4 and 5)
 
 Running each of the above scripts in a terminal or a python interpreter will run the corresponding
 parts labeled, and will generate all necessary charts.
