@@ -3,7 +3,7 @@ https://github.com/changrybirds/ml-2020spring/tree/master/a3-unsupervised-learni
 
 This assignment folder contains all the code necessary to run the experiments.
 
-The top folder in this repository contains a requirements.txt file that lists the exact
+This assignment folder contains a requirements.txt file that lists the exact
 packages needed to run the code.
 
 The main external packages necessary to run the code in this repo are:
