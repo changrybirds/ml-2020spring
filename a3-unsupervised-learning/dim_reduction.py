@@ -48,7 +48,7 @@ def run_pca(dataset_name, X, y, verbose=False):
     # calculate reconstruction loss
     X_projected = opt_pca.inverse_transform(opt_X_pca)
     recon_loss = ((X - X_projected) ** 2).mean()
-    print(dataset_name, ": PCA reconstruction loss for k =", optimal_comp, ":", np.sum(recon_loss))
+    print(dataset_name, ": PCA reconstruction loss for k =", optimal_comp, ":", np.sum(recon_loss), '\n')
     opt_X_pca = pd.DataFrame(opt_X_pca)
 
     # run K-means
@@ -93,7 +93,7 @@ def run_ica(dataset_name, X, y, verbose=False):
     # calculate reconstruction loss
     X_projected = opt_ica.inverse_transform(opt_X_ica)
     recon_loss = ((X - X_projected) ** 2).mean()
-    print(dataset_name, ": ICA reconstruction loss for k =", optimal_comp, ":", np.sum(recon_loss))
+    print(dataset_name, ": ICA reconstruction loss for k =", optimal_comp, ":", np.sum(recon_loss), '\n')
     opt_X_ica = pd.DataFrame(opt_X_ica)
 
     # run K-means
@@ -142,8 +142,15 @@ def run_rp(dataset_name, X, y, verbose=False):
     plt.savefig('graphs/rp_' + dataset_name + '_recon_loss.png')
     plt.clf()
 
+    # calculate reconstruction error
     grp = GaussianRandomProjection(n_components=n_components, random_state=RANDOM_SEED)
     X_rp = grp.fit_transform(X)
+
+    X_comp_pinv = np.linalg.pinv(grp.components_.T)
+    X_projection = np.dot(X_rp, X_comp_pinv)
+    recon_loss = ((X - X_projection) ** 2).mean()
+
+    print(dataset_name, ": RP reconstruction loss for k =", n_components, ":", np.sum(recon_loss), '\n')
     X_rp = pd.DataFrame(X_rp)
 
     # run K-means
@@ -175,6 +182,8 @@ def run_dt_fi(dataset_name, X, y, verbose=False):
 
     selected_features = fi_df.index[0:num_features].tolist()
     X_selected = X[selected_features]
+
+    print("-------- DT_FI complete! --------\n")
 
     # run K-means
     clustering.run_k_means(dataset_name, X_selected, y, dim_reduction='dt_fi', verbose=verbose)
