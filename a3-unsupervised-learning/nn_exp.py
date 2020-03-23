@@ -220,13 +220,13 @@ def abalone_cluster(verbose=False, show_plots=False):
     X, y = data_proc.process_abalone(scaler='minmax', tt_split=False)
 
     # calculate baseline performance
-    # base_X_train, base_X_test, base_y_train, base_y_test = data_proc.process_abalone(tt_split=True)
-    # run_experiment(
-    #     'abalone', 'baseline',
-    #     base_X_train, base_X_test, base_y_train, base_y_test,
-    #     verbose=verbose, show_plots=show_plots,
-    # )
-    # if verbose: print("\nBaseline complete!\n", "------------------------------\n")
+    base_X_train, base_X_test, base_y_train, base_y_test = data_proc.process_abalone(tt_split=True)
+    run_experiment(
+        'abalone', 'baseline',
+        base_X_train, base_X_test, base_y_train, base_y_test,
+        verbose=verbose, show_plots=show_plots,
+    )
+    if verbose: print("\nBaseline complete!\n", "------------------------------\n")
 
     # calculate K-means performance
     k_means_X_clusters = clustering.run_k_means('abalone', X, y, dim_reduction=None, verbose=verbose)
@@ -254,7 +254,7 @@ def abalone_cluster(verbose=False, show_plots=False):
 
 
 def main():
-    # abalone_dr(verbose=True, show_plots=False)
+    abalone_dr(verbose=True, show_plots=False)
     abalone_cluster(verbose=True, show_plots=False)
 
 
