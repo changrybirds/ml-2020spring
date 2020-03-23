@@ -57,6 +57,8 @@ def run_pca(dataset_name, X, y, verbose=False):
     # run EM
     clustering.run_expect_max(dataset_name, opt_X_pca, y, dim_reduction='pca', verbose=verbose)
 
+    return opt_X_pca
+
 
 def run_ica(dataset_name, X, y, verbose=False):
     # attempt ICA for various dimensionality levels
@@ -99,6 +101,8 @@ def run_ica(dataset_name, X, y, verbose=False):
 
     # run EM
     clustering.run_expect_max(dataset_name, opt_X_ica, y, dim_reduction='ica', verbose=verbose)
+
+    return opt_X_ica
 
 
 def run_rp(dataset_name, X, y, verbose=False):
@@ -148,6 +152,8 @@ def run_rp(dataset_name, X, y, verbose=False):
     # run EM
     clustering.run_expect_max(dataset_name, X_rp, y, dim_reduction='rp', verbose=verbose)
 
+    return X_rp
+
 
 def run_dt_fi(dataset_name, X, y, verbose=False):
     dtclf = DecisionTreeClassifier(random_state=RANDOM_SEED)
@@ -176,9 +182,11 @@ def run_dt_fi(dataset_name, X, y, verbose=False):
     # run EM
     clustering.run_expect_max(dataset_name, X_selected, y, dim_reduction='dt_fi', verbose=verbose)
 
+    return X_selected
+
 
 def abalone(verbose=False):
-    X, y = data_proc.process_abalone(scaler='minmax')
+    X, y = data_proc.process_abalone(scaler='minmax', tt_split=False)
     run_pca('abalone', X, y, verbose=verbose)
     run_ica('abalone', X, y, verbose=verbose)
     run_rp('abalone', X, y, verbose=verbose)
@@ -186,7 +194,7 @@ def abalone(verbose=False):
 
 
 def online_shopping(verbose=False):
-    X, y = data_proc.process_online_shopping(scaler='minmax')
+    X, y = data_proc.process_online_shopping(scaler='minmax', tt_split=False)
     run_pca('shopping', X, y, verbose=verbose)
     run_ica('shopping', X, y, verbose=verbose)
     run_rp('shopping', X, y, verbose=verbose)

@@ -7,8 +7,8 @@ from sklearn.model_selection import cross_val_score, train_test_split, learning_
 from time import time
 
 SEED_VAL = 313
-# CV_VAL = 5
-# HOLDOUT_SIZE = 0.3
+HOLDOUT_SIZE = 0.3
+CV_VAL = 5
 
 
 # not needed for these datasets, can use get_dummies instead
@@ -29,7 +29,7 @@ def encode_data(df, cols):
     return encoded
 
 
-def process_abalone(scaler='minmax'):
+def process_abalone(scaler='minmax', tt_split=False):
     abalone_names = [
         'sex', 'length', 'diameter', 'height', 'whole_weight',
         'shucked_weight', 'viscera_weight', 'shell_weight', 'rings'
@@ -52,10 +52,13 @@ def process_abalone(scaler='minmax'):
     else:
         X = pd.DataFrame(StandardScaler().fit_transform(X.values), columns=X.columns)
 
-    return X, y
+    if tt_split:
+        return train_test_split(X, y, test_size=HOLDOUT_SIZE, random_state=SEED_VAL)
+    else:
+        return X, y
 
 
-def process_online_shopping(scaler='minmax'):
+def process_online_shopping(scaler='minmax', tt_split=False):
     df = pd.read_csv('./online_shoppers_intention.csv')
     df = df.dropna()
 
@@ -81,6 +84,15 @@ def process_online_shopping(scaler='minmax'):
     elif scaler == 'standard':
         X = pd.DataFrame(StandardScaler().fit_transform(X.values), columns=X.columns)
 
-    return X, y
+    if tt_split:
+        return train_test_split(X, y, test_size=HOLDOUT_SIZE, random_state=SEED_VAL)
+    else:
+        return X, y
 
 
+def model_train_score(estimator, X_train, y_train):
+    return estimator.score(X_train, y_train)
+
+
+def model_test_score(estimator, X_test, y_test):
+    return estimator.score(X_test, y_test)
