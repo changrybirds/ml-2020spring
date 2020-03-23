@@ -58,7 +58,7 @@ def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
     grouped.to_csv(csv_path, header=True)
     if verbose: print(dataset_name, '\n', grouped, '\n')
 
-    return df.drop('y', axis=1)
+    return df['cluster']
 
 
 def run_expect_max(dataset_name, X, y, dim_reduction=None, verbose=False):
@@ -104,7 +104,7 @@ def run_expect_max(dataset_name, X, y, dim_reduction=None, verbose=False):
     grouped.to_csv(csv_path, header=True)
     if verbose: print(dataset_name, '\n', grouped, '\n')
 
-    return df.drop('y', axis=1)
+    return df['cluster']
 
 
 def abalone(verbose=False):

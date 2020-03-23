@@ -159,8 +159,8 @@ def run_experiment(dataset_name, exp_name, X_train, X_test, y_train, y_test, ver
 
     train_score = data_proc.model_train_score(mlpclf, X_train, y_train)
     test_score = data_proc.model_test_score(mlpclf, X_test, y_test)
-    print("MLPClassifier training set score for " + dataset_name + ": ", train_score)
-    print("MLPClassifier holdout set score for " + dataset_name + ": ", test_score)
+    print("MLPClassifier training set score for", exp_name, dataset_name + ": ", train_score)
+    print("MLPClassifier holdout set score for", exp_name, dataset_name + ": ", test_score)
 
 
 def abalone_dr(verbose=False, show_plots=False):
@@ -216,8 +216,46 @@ def abalone_dr(verbose=False, show_plots=False):
     if verbose: print("\nDT_FI complete!\n", "------------------------------\n")
 
 
+def abalone_cluster(verbose=False, show_plots=False):
+    X, y = data_proc.process_abalone(scaler='minmax', tt_split=False)
+
+    # calculate baseline performance
+    # base_X_train, base_X_test, base_y_train, base_y_test = data_proc.process_abalone(tt_split=True)
+    # run_experiment(
+    #     'abalone', 'baseline',
+    #     base_X_train, base_X_test, base_y_train, base_y_test,
+    #     verbose=verbose, show_plots=show_plots,
+    # )
+    # if verbose: print("\nBaseline complete!\n", "------------------------------\n")
+
+    # calculate K-means performance
+    k_means_X_clusters = clustering.run_k_means('abalone', X, y, dim_reduction=None, verbose=verbose)
+    k_means_X_train, k_means_X_test, k_means_y_train, k_means_y_test = data_proc.process_abalone_w_clusters(
+        k_means_X_clusters, scaler='minmax')
+
+    run_experiment(
+        'abalone', 'kmeans',
+        k_means_X_train, k_means_X_test, k_means_y_train, k_means_y_test,
+        verbose=verbose, show_plots=show_plots,
+    )
+    if verbose: print("\nK-means complete!\n", "------------------------------\n")
+
+    # calculate Expectation Maximization performance
+    em_X_clusters = clustering.run_expect_max('abalone', X, y, dim_reduction=None, verbose=verbose)
+    em_X_train, em_X_test, em_y_train, em_y_test = data_proc.process_abalone_w_clusters(
+        em_X_clusters, scaler='minmax')
+
+    run_experiment(
+        'abalone', 'em',
+        em_X_train, em_X_test, em_y_train, em_y_test,
+        verbose=verbose, show_plots=show_plots,
+    )
+    if verbose: print("\nExpectation Maximization complete!\n", "------------------------------\n")
+
+
 def main():
-    abalone_dr(verbose=True, show_plots=False)
+    # abalone_dr(verbose=True, show_plots=False)
+    abalone_cluster(verbose=True, show_plots=False)
 
 
 if __name__ == "__main__":

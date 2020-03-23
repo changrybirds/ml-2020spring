@@ -58,6 +58,41 @@ def process_abalone(scaler='minmax', tt_split=False):
         return X, y
 
 
+def process_abalone_w_clusters(X_clusters, scaler='minmax'):
+    abalone_names = [
+        'sex', 'length', 'diameter', 'height', 'whole_weight',
+        'shucked_weight', 'viscera_weight', 'shell_weight', 'rings'
+        ]
+    df = pd.read_csv('./abalone.csv', header=None, names=abalone_names)
+    df = df.dropna()
+
+    # attach cluster labels
+    df['clusters'] = X_clusters
+    df = df.astype({'clusters': 'str'})
+    abalone_cols = [
+        'sex', 'length', 'diameter', 'height', 'whole_weight',
+        'shucked_weight', 'viscera_weight', 'shell_weight', 'clusters', 'rings'
+        ]
+    df = df[abalone_cols]
+
+    # transform output into classification problem
+    df.loc[df['rings'] < 9, 'rings'] = 1
+    df.loc[(df['rings'] >= 9) & (df['rings'] <= 10), 'rings'] = 2
+    df.loc[df['rings'] > 10, 'rings'] = 3
+
+    X = df.iloc[:, :-1]
+    y = df.iloc[:, -1]
+
+    # encode data
+    X = pd.get_dummies(X)
+    if scaler == 'minmax':
+        X = pd.DataFrame(MinMaxScaler().fit_transform(X.values), columns=X.columns)
+    else:
+        X = pd.DataFrame(StandardScaler().fit_transform(X.values), columns=X.columns)
+
+    return train_test_split(X, y, test_size=HOLDOUT_SIZE, random_state=SEED_VAL)
+
+
 def process_online_shopping(scaler='minmax', tt_split=False):
     df = pd.read_csv('./online_shoppers_intention.csv')
     df = df.dropna()
