@@ -51,12 +51,14 @@ def run_k_means(dataset_name, X, y, dim_reduction=None, verbose=False):
     # using optimal no. clusters, examine label distribution - no dimensionality reduction
     df = X.copy(deep=True)
     df['y'] = y
-    df['cluster'] = opt_labels
+    df['cluster'] = opt_y_hat
     grouped = df.groupby(['y', 'cluster']).count().iloc[:, 0]
 
     csv_path = 'tmp/kmeans_' + dim_reduction + '_' + dataset_name + '.csv'
     grouped.to_csv(csv_path, header=True)
     if verbose: print(dataset_name, '\n', grouped, '\n')
+
+    return df.drop('y', axis=1)
 
 
 def run_expect_max(dataset_name, X, y, dim_reduction=None, verbose=False):
@@ -101,6 +103,8 @@ def run_expect_max(dataset_name, X, y, dim_reduction=None, verbose=False):
     csv_path = 'tmp/em_' + dim_reduction + '_' + dataset_name + '.csv'
     grouped.to_csv(csv_path, header=True)
     if verbose: print(dataset_name, '\n', grouped, '\n')
+
+    return df.drop('y', axis=1)
 
 
 def abalone(verbose=False):
