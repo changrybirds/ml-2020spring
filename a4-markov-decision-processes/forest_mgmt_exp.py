@@ -418,7 +418,7 @@ def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
         print("Forest Management PI Episode", episode, "last iter:", fm_pi.iter, '\n')
 
     filename = "fm_pi_stats.csv"
-    output_to_csv(filename, all_rewards, all_iters)
+    output_to_csv(filename, all_iters, all_rewards)
 
     combined_error_df = pd.concat(all_error_dfs, axis=1)
     mean_error_per_iter = combined_error_df.mean(axis=1)
