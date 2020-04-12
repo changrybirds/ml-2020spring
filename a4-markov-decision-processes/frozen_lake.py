@@ -7,6 +7,11 @@ from io import StringIO
 from gym import utils
 from gym.envs.toy_text import discrete
 
+
+# adapted from OpenAI gym's frozen lake problem:
+# https://github.com/openai/gym/blob/master/gym/envs/toy_text/frozen_lake.py
+
+
 LEFT = 0
 DOWN = 1
 RIGHT = 2
