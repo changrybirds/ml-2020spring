@@ -211,7 +211,7 @@ def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
 
 def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
     all_rewards = []
-    all_mean_discrepancies = []
+    all_mean_discrepancies_dfs = []
     all_error_dfs = []
 
     num_episodes = len(envs)
@@ -227,9 +227,14 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
         fl_qlearn.run()
 
         # add mean discrepancies for each episode
-        v_mean = np.sum(fl_qlearn.v_mean)
-        all_mean_discrepancies.append(v_mean)
-        print("Frozen Lake QLearning Episode", episode, "mean discrepancy:", v_mean, '\n')
+        v_means = []
+        for v_mean in fl_qlearn.v_mean:
+            v_means.append(np.mean(v_mean))
+        v_mean_df = pd.DataFrame(v_means, columns=['v_mean'])
+        # v_mean_df.iloc[0: n_iters / 100, :] = v_means
+
+        all_mean_discrepancies_dfs.append(v_mean_df)
+        print("Frozen Lake QLearning Episode", episode, "mean discrepancy:", '\n', v_mean_df, '\n')
 
         error_over_iters = fl_qlearn.error_over_iters
         # print(error_over_iters)
@@ -248,6 +253,11 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
     filename = "tmp/fl_qlearn_stats.csv"
     rewards_df = pd.DataFrame(all_rewards)
     rewards_df.to_csv(filename)
+
+    mean_v_filename = "tmp/fl_qlearn_meanv.csv"
+    mean_v_df = pd.concat(all_mean_discrepancies_dfs, axis=1)
+    mean_mean_v = mean_v_df.mean(axis=1)
+    mean_mean_v.to_csv(mean_v_filename)
 
     combined_error_df = pd.concat(all_error_dfs, axis=1)
     mean_error_per_iter = combined_error_df.mean(axis=1)
@@ -274,7 +284,7 @@ def main():
 
     run_vi(fl_envs, gamma=gamma, max_iters=max_iters, verbose=verbose)
     run_pi(fl_envs, gamma=gamma, max_iters=max_iters, verbose=verbose)
-    # run_qlearn(fl_envs, gamma=gamma, n_iters=n_iters, verbose=verbose)
+    run_qlearn(fl_envs, gamma=gamma, n_iters=n_iters, verbose=verbose)
 
 
 if __name__ == "__main__":
