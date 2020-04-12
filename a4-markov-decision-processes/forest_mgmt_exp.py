@@ -4,17 +4,21 @@ import matplotlib.pyplot as plt
 
 from hiive.mdptoolbox import mdp
 
+import plotting
+
 
 # The number of population abundance classes
-POPULATION_CLASSES = 15
+POPULATION_CLASSES = 8
 # The number of years since a fire classes
-FIRE_CLASSES = 15
+FIRE_CLASSES = 14
 # The number of states
 STATES = POPULATION_CLASSES * FIRE_CLASSES
 # The number of actions
 ACTIONS = 2
 ACTION_NOTHING = 0
 ACTION_BURN = 1
+# Probability a population remains in its current abundance class
+PROB_REMAIN = 0.5
 
 
 def check_action(x):
@@ -23,6 +27,7 @@ def check_action(x):
         msg = "Invalid action '%s', it should be in {0, 1}." % str(x)
         raise ValueError(msg)
 
+
 def check_population_class(x):
     """Check that the population abundance class is in the valid range."""
     if not (0 <= x < POPULATION_CLASSES):
@@ -30,12 +35,14 @@ def check_population_class(x):
               % (str(x), POPULATION_CLASSES - 1)
         raise ValueError(msg)
 
+
 def check_fire_class(x):
     """Check that the time in years since last fire is in the valid range."""
     if not (0 <= x < FIRE_CLASSES):
         msg = "Invalid fire class '%s', it should be in {0, 1, …, %d}." % \
               (str(x), FIRE_CLASSES - 1)
         raise ValueError(msg)
+
 
 def check_probability(x, name="probability"):
     """Check that a probability is between 0 and 1."""
@@ -280,34 +287,6 @@ def get_transition_and_reward_arrays(s):
     return (transition, reward)
 
 
-def solve_mdp():
-    """Solve the problem as a finite horizon Markov decision process.
-
-    The optimal policy at each stage is found using backwards induction.
-    Possingham and Tuck report strategies for a 50 year time horizon, so the
-    number of stages for the finite horizon algorithm is set to 50. There is no
-    discount factor reported, so we set it to 0.96 rather arbitrarily.
-
-    Returns
-    -------
-    sdp : mdptoolbox.mdp.FiniteHorizon
-        The PyMDPtoolbox object that represents a finite horizon MDP. The
-        optimal policy for each stage is accessed with mdp.policy, which is a
-        numpy array with 50 columns (one for each stage).
-
-    """
-    P, R = get_transition_and_reward_arrays(0.5)
-    sdp = mdp.PolicyIteration(
-        transitions=P,
-        reward=R,
-        gamma=0.96,
-        # N=50,
-    )
-    sdp.setVerbose()
-    sdp.run()
-    return sdp
-
-
 def print_policy(policy):
     """Print out a policy vector as a table to console
 
@@ -330,16 +309,197 @@ def print_policy(policy):
         print(" %2d|" % x + " ".join("%2d" % p[x, f] for f in
                                      range(FIRE_CLASSES)))
 
+# ---------------------------------------------------------------------------------------- #
+# ideally, the above code would be refactored into a class specifically designed to create
+# forest manageemnt problems - I'm leaving it as is here due to time constraints
 
-def run_pi(mdp, verbose=True):
-    pass
+
+def output_to_csv(filename, iters, rewards=None):
+    if rewards is not None and len(rewards) > 0:
+        d = {'rewards': rewards, 'iters': iters}
+    else:
+        d = {'iters': iters}
+    df = pd.DataFrame(d)
+    path = "tmp/"+ filename
+    df.to_csv(path)
+
+
+def run_vi(envs, gamma=0.96, max_iters=1000, verbose=True):
+    all_rewards = []
+    all_iters = []
+    all_error_means = []
+    all_error_dfs = []
+
+    num_episodes = len(envs)
+    for env, episode in zip(envs, range(num_episodes)):
+        P, R = env
+        fm_vi = mdp.ValueIteration(
+            transitions=P,
+            reward=R,
+            gamma=gamma,
+            max_iter=max_iters,
+        )
+        # if verbose: fm_vi.setVerbose()
+        fm_vi.run()
+
+        # add error means for each episode
+        error_m = np.sum(fm_vi.error_mean)
+        all_error_means.append(error_m)
+        print("Forest Management VI Episode", episode, "error mean:", error_m, '\n')
+
+        error_over_iters = fm_vi.error_over_iters
+        # print(error_over_iters)
+        error_plot_df = pd.DataFrame(0, index=np.arange(1, max_iters + 1), columns=['error'])
+        error_plot_df.iloc[0:len(error_over_iters), :] = error_over_iters
+        all_error_dfs.append(error_plot_df)
+
+        print_policy(fm_vi.policy)
+        # print(fm_vi.policy, '\n', R, '\n')
+
+        # rewards = calc_reward(fm_vi.policy, R)
+        # total_reward = np.sum(rewards)
+        # all_rewards.append(total_reward)
+        # print("Forest Management VI Episode", episode, "reward:", total_reward, '\n')
+
+        all_iters.append(fm_vi.iter)
+        print("Forest Management VI Episode", episode, "last iter:", fm_vi.iter, '\n')
+
+    filename = "fm_vi_stats.csv"
+    output_to_csv(filename, all_iters, all_rewards)
+
+    combined_error_df = pd.concat(all_error_dfs, axis=1)
+    mean_error_per_iter = combined_error_df.mean(axis=1)
+    mean_error_per_iter.to_csv("tmp/fm_vi_error.csv")
+
+    # plot the error over iterations
+    title = "FM VI: error vs. iter (mean over " + str(num_episodes) + " episodes)"
+    path = "graphs/fm_vi_error_iter.png"
+    plotting.plot_error_over_iters(mean_error_per_iter, title, path, xlim=200)
+
+
+def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
+    all_rewards = []
+    all_iters = []
+    all_error_means = []
+    all_error_dfs = []
+
+    num_episodes = len(envs)
+    for env, episode in zip(envs, range(num_episodes)):
+        P, R = env
+        fm_pi = mdp.PolicyIteration(
+            transitions=P,
+            reward=R,
+            gamma=0.96,
+        )
+        # if verbose: fm_pi.setVerbose()
+        fm_pi.run()
+
+        # add error means for each episode
+        error_m = np.sum(fm_pi.error_mean)
+        all_error_means.append(error_m)
+        print("Forest Management PI Episode", episode, "error mean:", error_m, '\n')
+
+        error_over_iters = fm_pi.error_over_iters
+        variation_over_iters = fm_pi.variation_over_iters
+        # print(error_over_iters)
+        error_plot_df = pd.DataFrame(0, index=np.arange(1, max_iters + 1), columns=['error'])
+        error_plot_df.iloc[0:len(error_over_iters), :] = error_over_iters
+        all_error_dfs.append(error_plot_df)
+
+        print_policy(fm_pi.policy)
+        # print(fm_pi.policy, '\n', R, '\n')
+
+        # rewards = calc_reward(fm_pi.policy, R)
+        # total_reward = np.sum(rewards)
+        # all_rewards.append(total_reward)
+        # print("Forest Management PI Episode", episode, "reward:", total_reward, '\n')
+
+        all_iters.append(fm_pi.iter)
+        print("Forest Management PI Episode", episode, "last iter:", fm_pi.iter, '\n')
+
+    filename = "fm_pi_stats.csv"
+    output_to_csv(filename, all_rewards, all_iters)
+
+    combined_error_df = pd.concat(all_error_dfs, axis=1)
+    mean_error_per_iter = combined_error_df.mean(axis=1)
+    mean_error_per_iter.to_csv("tmp/fm_pi_error.csv")
+
+    # plot the error over iterations
+    title = "FM PI: error vs. iter (mean over " + str(num_episodes) + " episodes)"
+    path = "graphs/fm_pi_error_iter.png"
+    plotting.plot_error_over_iters(mean_error_per_iter, title, path, xlim=200)
+
+
+def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
+    all_rewards = []
+    all_mean_discrepancies_dfs = []
+    all_error_dfs = []
+
+    num_episodes = len(envs)
+    for env, episode in zip(envs, range(num_episodes)):
+        P, R = env
+        fm_qlearn = mdp.QLearning(
+            transitions=P,
+            reward=R,
+            gamma=gamma,
+            n_iter=n_iters,
+        )
+        # if verbose: fm_qlearn.setVerbose()
+        fm_qlearn.run()
+
+        # add mean discrepancies for each episode
+        v_means = []
+        for v_mean in fm_qlearn.v_mean:
+            v_means.append(np.mean(v_mean))
+        v_mean_df = pd.DataFrame(v_means, columns=['v_mean'])
+        # v_mean_df.iloc[0: n_iters / 100, :] = v_means
+
+        all_mean_discrepancies_dfs.append(v_mean_df)
+        print("Forest Management QLearning Episode", episode, "mean discrepancy:", '\n', v_mean_df, '\n')
+
+        error_over_iters = fm_qlearn.error_over_iters
+        # print(error_over_iters)
+        error_plot_df = pd.DataFrame(0, index=np.arange(1, n_iters + 1), columns=['error'])
+        error_plot_df.iloc[0:len(error_over_iters), :] = error_over_iters
+        all_error_dfs.append(error_plot_df)
+
+        print_policy(fm_qlearn.policy)
+
+        # rewards = calc_reward(fm_qlearn.policy, R)
+        # total_reward = np.sum(rewards)
+        # all_rewards.append(total_reward)
+        # print("Forest Management QLearning Episode", episode, "reward:", total_reward, '\n')
+
+    # filename = "tmp/fm_qlearn_stats.csv"
+    # rewards_df = pd.DataFrame(all_rewards)
+    # rewards_df.to_csv(filename)
+
+    combined_error_df = pd.concat(all_error_dfs, axis=1)
+    mean_error_per_iter = combined_error_df.mean(axis=1)
+    mean_error_per_iter.to_csv("tmp/fm_qlearn_error.csv")
+
+    # plot the error over iterations
+    title = "FM QL: error vs. iter (mean over " + str(num_episodes) + " episodes)"
+    path = "graphs/fm_ql_error_iter.png"
+    plotting.plot_error_over_iters(mean_error_per_iter, title, path)
 
 
 def main():
-    fh = solve_mdp()
-    print(len(fh.V))
-    print(len(fh.policy))
-    print_policy(fh.policy)
+    verbose = True
+    max_iters = 1000
+    num_episodes = 100
+    gamma = 0.96
+
+    n_iters = 10000  # for Q learning
+
+    fm_envs = []
+    for e in range(num_episodes):
+        fm_env = get_transition_and_reward_arrays(PROB_REMAIN)
+        fm_envs.append(fm_env)
+
+    run_vi(fm_envs, gamma=gamma, max_iters=max_iters, verbose=verbose)
+    run_pi(fm_envs, gamma=gamma, max_iters=max_iters, verbose=verbose)
+    run_qlearn(fm_envs, gamma=gamma, n_iters=n_iters, verbose=verbose)
 
 
 if __name__ == "__main__":
