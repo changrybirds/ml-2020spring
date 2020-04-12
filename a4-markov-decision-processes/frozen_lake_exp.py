@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 from hiive.mdptoolbox import mdp
 
 import frozen_lake as frz
+import plotting
 
 GRID_DIM = 20
 PROB_FROZEN = 0.8
@@ -150,6 +150,9 @@ def run_vi(envs, gamma=0.96, max_iters=1000, verbose=True):
     mean_error_per_iter.to_csv("tmp/fl_vi_error.csv")
 
     # plot the error over iterations
+    title = "FL VI: error vs. iter (mean over " + str(num_episodes) + " episodes)"
+    path = "graphs/fl_vi_error_iter.png"
+    plotting.plot_error_over_iters(mean_error_per_iter, title, path, xlim=50)
 
 
 def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
@@ -176,6 +179,7 @@ def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
         print("Frozen Lake PI Episode", episode, "error mean:", error_m, '\n')
 
         error_over_iters = fl_pi.error_over_iters
+        variation_over_iters = fl_pi.variation_over_iters
         # print(error_over_iters)
         error_plot_df = pd.DataFrame(0, index=np.arange(1, max_iters + 1), columns=['error'])
         error_plot_df.iloc[0:len(error_over_iters), :] = error_over_iters
@@ -200,6 +204,9 @@ def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
     mean_error_per_iter.to_csv("tmp/fl_pi_error.csv")
 
     # plot the error over iterations
+    title = "FL PI: error vs. iter (mean over " + str(num_episodes) + " episodes)"
+    path = "graphs/fl_pi_error_iter.png"
+    plotting.plot_error_over_iters(mean_error_per_iter, title, path, xlim=50)
 
 
 def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
@@ -247,6 +254,9 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
     mean_error_per_iter.to_csv("tmp/fl_qlearn_error.csv")
 
     # plot the error over iterations
+    title = "FL QL: error vs. iter (mean over " + str(num_episodes) + " episodes)"
+    path = "graphs/fl_ql_error_iter.png"
+    plotting.plot_error_over_iters(mean_error_per_iter, title, path)
 
 
 def main():
@@ -264,7 +274,7 @@ def main():
 
     run_vi(fl_envs, gamma=gamma, max_iters=max_iters, verbose=verbose)
     run_pi(fl_envs, gamma=gamma, max_iters=max_iters, verbose=verbose)
-    run_qlearn(fl_envs, gamma=gamma, n_iters=n_iters, verbose=verbose)
+    # run_qlearn(fl_envs, gamma=gamma, n_iters=n_iters, verbose=verbose)
 
 
 if __name__ == "__main__":
