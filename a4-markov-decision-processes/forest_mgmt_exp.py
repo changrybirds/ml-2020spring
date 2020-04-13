@@ -348,7 +348,7 @@ def run_vi(envs, gamma=0.96, max_iters=1000, verbose=True):
         fm_vi.run()
         time_elapsed = time() - t0
         time_per_run.append(time_elapsed)
-        if verbose: print("Forest Management Episode", episode, "runtime (s):", time_elapsed)
+        if verbose: print("Forest Management VI Episode", episode, "runtime (s):", time_elapsed)
 
         # add error means for each episode
         error_m = np.sum(fm_vi.error_mean)
@@ -409,7 +409,7 @@ def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
         fm_pi.run()
         time_elapsed = time() - t0
         time_per_run.append(time_elapsed)
-        if verbose: print("Forest Management Episode", episode, "runtime (s):", time_elapsed)
+        if verbose: print("Forest Management PI Episode", episode, "runtime (s):", time_elapsed)
 
         # add error means for each episode
         error_m = np.sum(fm_pi.error_mean)
@@ -471,7 +471,7 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
         fm_qlearn.run()
         time_elapsed = time() - t0
         time_per_run.append(time_elapsed)
-        if verbose: print("Forest Management Episode", episode, "runtime (s):", time_elapsed)
+        if verbose: print("Forest Management QLearning Episode", episode, "runtime (s):", time_elapsed)
 
         # add mean discrepancies for each episode
         v_means = []

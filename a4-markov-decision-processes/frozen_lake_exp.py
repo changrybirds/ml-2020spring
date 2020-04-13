@@ -125,7 +125,7 @@ def run_vi(envs, gamma=0.96, max_iters=1000, verbose=True):
         fl_vi.run()
         time_elapsed = time() - t0
         time_per_run.append(time_elapsed)
-        if verbose: print("Frozen Lake Episode", episode, "runtime (s):", time_elapsed)
+        if verbose: print("Frozen Lake VI Episode", episode, "runtime (s):", time_elapsed)
 
         # add error means for each episode
         error_m = np.sum(fl_vi.error_mean)
@@ -187,7 +187,7 @@ def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
         fl_pi.run()
         time_elapsed = time() - t0
         time_per_run.append(time_elapsed)
-        if verbose: print("Frozen Lake Episode", episode, "runtime (s):", time_elapsed)
+        if verbose: print("Frozen Lake PI Episode", episode, "runtime (s):", time_elapsed)
 
         # add error means for each episode
         error_m = np.sum(fl_pi.error_mean)
@@ -249,7 +249,7 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
         fl_qlearn.run()
         time_elapsed = time() - t0
         time_per_run.append(time_elapsed)
-        if verbose: print("Frozen Lake Episode", episode, "runtime (s):", time_elapsed)
+        if verbose: print("Frozen Lake QLearning Episode", episode, "runtime (s):", time_elapsed)
 
         # add mean discrepancies for each episode
         v_means = []
