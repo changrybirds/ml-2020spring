@@ -4,13 +4,15 @@ import matplotlib.pyplot as plt
 
 from hiive.mdptoolbox import mdp
 
+from time import time
+
 import plotting
 
 
 # The number of population abundance classes
-POPULATION_CLASSES = 8
+POPULATION_CLASSES = 12
 # The number of years since a fire classes
-FIRE_CLASSES = 14
+FIRE_CLASSES = 15
 # The number of states
 STATES = POPULATION_CLASSES * FIRE_CLASSES
 # The number of actions
@@ -308,6 +310,7 @@ def print_policy(policy):
     for x in range(POPULATION_CLASSES):
         print(" %2d|" % x + " ".join("%2d" % p[x, f] for f in
                                      range(FIRE_CLASSES)))
+    print()
 
 # ---------------------------------------------------------------------------------------- #
 # ideally, the above code would be refactored into a class specifically designed to create
@@ -329,6 +332,7 @@ def run_vi(envs, gamma=0.96, max_iters=1000, verbose=True):
     all_iters = []
     all_error_means = []
     all_error_dfs = []
+    time_per_run = []
 
     num_episodes = len(envs)
     for env, episode in zip(envs, range(num_episodes)):
@@ -340,12 +344,16 @@ def run_vi(envs, gamma=0.96, max_iters=1000, verbose=True):
             max_iter=max_iters,
         )
         # if verbose: fm_vi.setVerbose()
+        t0 = time()
         fm_vi.run()
+        time_elapsed = time() - t0
+        time_per_run.append(time_elapsed)
+        if verbose: print("Episode", episode, "runtime (s):", time_elapsed)
 
         # add error means for each episode
         error_m = np.sum(fm_vi.error_mean)
         all_error_means.append(error_m)
-        print("Forest Management VI Episode", episode, "error mean:", error_m, '\n')
+        if verbose: print("Forest Management VI Episode", episode, "error mean:", error_m, '\n')
 
         error_over_iters = fm_vi.error_over_iters
         # print(error_over_iters)
@@ -359,10 +367,10 @@ def run_vi(envs, gamma=0.96, max_iters=1000, verbose=True):
         # rewards = calc_reward(fm_vi.policy, R)
         # total_reward = np.sum(rewards)
         # all_rewards.append(total_reward)
-        # print("Forest Management VI Episode", episode, "reward:", total_reward, '\n')
+        # if verbose: print("Forest Management VI Episode", episode, "reward:", total_reward, '\n')
 
         all_iters.append(fm_vi.iter)
-        print("Forest Management VI Episode", episode, "last iter:", fm_vi.iter, '\n')
+        if verbose: print("Forest Management VI Episode", episode, "last iter:", fm_vi.iter, '\n')
 
     filename = "fm_vi_stats.csv"
     output_to_csv(filename, all_iters, all_rewards)
@@ -376,12 +384,17 @@ def run_vi(envs, gamma=0.96, max_iters=1000, verbose=True):
     path = "graphs/fm_vi_error_iter.png"
     plotting.plot_error_over_iters(mean_error_per_iter, title, path, xlim=200)
 
+    # show avg time per run
+    avg_time_per_run = np.mean(np.array(time_per_run))
+    print("FM VI - avg seconds per run:", avg_time_per_run, '\n')
+
 
 def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
     all_rewards = []
     all_iters = []
     all_error_means = []
     all_error_dfs = []
+    time_per_run = []
 
     num_episodes = len(envs)
     for env, episode in zip(envs, range(num_episodes)):
@@ -392,12 +405,16 @@ def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
             gamma=0.96,
         )
         # if verbose: fm_pi.setVerbose()
+        t0 = time()
         fm_pi.run()
+        time_elapsed = time() - t0
+        time_per_run.append(time_elapsed)
+        if verbose: print("Episode", episode, "runtime (s):", time_elapsed)
 
         # add error means for each episode
         error_m = np.sum(fm_pi.error_mean)
         all_error_means.append(error_m)
-        print("Forest Management PI Episode", episode, "error mean:", error_m, '\n')
+        if verbose: print("Forest Management PI Episode", episode, "error mean:", error_m, '\n')
 
         error_over_iters = fm_pi.error_over_iters
         variation_over_iters = fm_pi.variation_over_iters
@@ -412,10 +429,10 @@ def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
         # rewards = calc_reward(fm_pi.policy, R)
         # total_reward = np.sum(rewards)
         # all_rewards.append(total_reward)
-        # print("Forest Management PI Episode", episode, "reward:", total_reward, '\n')
+        # if verbose: print("Forest Management PI Episode", episode, "reward:", total_reward, '\n')
 
         all_iters.append(fm_pi.iter)
-        print("Forest Management PI Episode", episode, "last iter:", fm_pi.iter, '\n')
+        if verbose: print("Forest Management PI Episode", episode, "last iter:", fm_pi.iter, '\n')
 
     filename = "fm_pi_stats.csv"
     output_to_csv(filename, all_iters, all_rewards)
@@ -429,11 +446,16 @@ def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
     path = "graphs/fm_pi_error_iter.png"
     plotting.plot_error_over_iters(mean_error_per_iter, title, path, xlim=200)
 
+    # show avg time per run
+    avg_time_per_run = np.mean(np.array(time_per_run))
+    print("FM PI - avg seconds per run:", avg_time_per_run, '\n')
+
 
 def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
     all_rewards = []
     all_mean_discrepancies_dfs = []
     all_error_dfs = []
+    time_per_run = []
 
     num_episodes = len(envs)
     for env, episode in zip(envs, range(num_episodes)):
@@ -445,7 +467,11 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
             n_iter=n_iters,
         )
         # if verbose: fm_qlearn.setVerbose()
+        t0 = time()
         fm_qlearn.run()
+        time_elapsed = time() - t0
+        time_per_run.append(time_elapsed)
+        if verbose: print("Episode", episode, "runtime (s):", time_elapsed)
 
         # add mean discrepancies for each episode
         v_means = []
@@ -455,7 +481,7 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
         # v_mean_df.iloc[0: n_iters / 100, :] = v_means
 
         all_mean_discrepancies_dfs.append(v_mean_df)
-        print("Forest Management QLearning Episode", episode, "mean discrepancy:", '\n', v_mean_df, '\n')
+        if verbose: print("Forest Management QLearning Episode", episode, "mean discrepancy:", '\n', v_mean_df, '\n')
 
         error_over_iters = fm_qlearn.error_over_iters
         # print(error_over_iters)
@@ -468,7 +494,7 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
         # rewards = calc_reward(fm_qlearn.policy, R)
         # total_reward = np.sum(rewards)
         # all_rewards.append(total_reward)
-        # print("Forest Management QLearning Episode", episode, "reward:", total_reward, '\n')
+        # if verbose: print("Forest Management QLearning Episode", episode, "reward:", total_reward, '\n')
 
     # filename = "tmp/fm_qlearn_stats.csv"
     # rewards_df = pd.DataFrame(all_rewards)
@@ -483,6 +509,10 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
     path = "graphs/fm_ql_error_iter.png"
     plotting.plot_error_over_iters(mean_error_per_iter, title, path)
 
+    # show avg time per run
+    avg_time_per_run = np.mean(np.array(time_per_run))
+    print("FM QL - avg seconds per run:", avg_time_per_run, '\n')
+
 
 def main():
     verbose = True
@@ -490,16 +520,22 @@ def main():
     num_episodes = 100
     gamma = 0.96
 
-    n_iters = 10000  # for Q learning
+    n_iters = 100000  # for Q learning
 
     fm_envs = []
     for e in range(num_episodes):
         fm_env = get_transition_and_reward_arrays(PROB_REMAIN)
         fm_envs.append(fm_env)
 
-    run_vi(fm_envs, gamma=gamma, max_iters=max_iters, verbose=verbose)
-    run_pi(fm_envs, gamma=gamma, max_iters=max_iters, verbose=verbose)
+    run_vi([fm_envs[0]], gamma=gamma, max_iters=max_iters, verbose=verbose)
+    print("\n", "----------------------------------------------------------", "\n")
+
+    run_pi([fm_envs[0]], gamma=gamma, max_iters=max_iters, verbose=verbose)
+    print("\n", "----------------------------------------------------------", "\n")
+
     run_qlearn(fm_envs, gamma=gamma, n_iters=n_iters, verbose=verbose)
+    print("\n", "----------------------------------------------------------", "\n")
+
 
 
 if __name__ == "__main__":

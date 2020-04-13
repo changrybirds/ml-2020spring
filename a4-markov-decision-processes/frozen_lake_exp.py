@@ -3,10 +3,12 @@ import pandas as pd
 
 from hiive.mdptoolbox import mdp
 
+from time import time
+
 import frozen_lake as frz
 import plotting
 
-GRID_DIM = 20
+GRID_DIM = 32
 PROB_FROZEN = 0.8
 
 DIRECTIONS = {
@@ -77,7 +79,7 @@ def gym_to_mdpt(env):
                 R[s, a] = reward
             P[a, s, :] /= np.sum(P[a, s, :])
 
-    env.render()
+    # env.render()
     print()
 
     return P, R
@@ -107,6 +109,7 @@ def run_vi(envs, gamma=0.96, max_iters=1000, verbose=True):
     all_iters = []
     all_error_means = []
     all_error_dfs = []
+    time_per_run = []
 
     num_episodes = len(envs)
     for env, episode in zip(envs, range(num_episodes)):
@@ -118,12 +121,16 @@ def run_vi(envs, gamma=0.96, max_iters=1000, verbose=True):
             max_iter=max_iters,
         )
         # if verbose: fl_vi.setVerbose()
+        t0 = time()
         fl_vi.run()
+        time_elapsed = time() - t0
+        time_per_run.append(time_elapsed)
+        if verbose: print("Episode", episode, "runtime (s):", time_elapsed)
 
         # add error means for each episode
         error_m = np.sum(fl_vi.error_mean)
         all_error_means.append(error_m)
-        print("Frozen Lake VI Episode", episode, "error mean:", error_m, '\n')
+        if verbose: print("Frozen Lake VI Episode", episode, "error mean:", error_m, '\n')
 
         error_over_iters = fl_vi.error_over_iters
         # print(error_over_iters)
@@ -132,15 +139,15 @@ def run_vi(envs, gamma=0.96, max_iters=1000, verbose=True):
         all_error_dfs.append(error_plot_df)
 
         policy_arrows = [DIRECTIONS[direction] for direction in fl_vi.policy]
-        print_policy(policy_arrows)
+        # print_policy(policy_arrows)
 
         rewards = calc_reward(fl_vi.policy, R)
         total_reward = np.sum(rewards)
         all_rewards.append(total_reward)
-        print("Frozen Lake VI Episode", episode, "reward:", total_reward, '\n')
+        if verbose: print("Frozen Lake VI Episode", episode, "reward:", total_reward, '\n')
 
         all_iters.append(fl_vi.iter)
-        print("Frozen Lake VI Episode", episode, "last iter:", fl_vi.iter, '\n')
+        if verbose: print("Frozen Lake VI Episode", episode, "last iter:", fl_vi.iter, '\n')
 
     filename = "fl_vi_stats.csv"
     output_to_csv(filename, all_rewards, all_iters)
@@ -154,12 +161,17 @@ def run_vi(envs, gamma=0.96, max_iters=1000, verbose=True):
     path = "graphs/fl_vi_error_iter.png"
     plotting.plot_error_over_iters(mean_error_per_iter, title, path, xlim=50)
 
+    # show avg time per run
+    avg_time_per_run = np.mean(np.array(time_per_run))
+    print("FL VI - avg seconds per run:", avg_time_per_run, '\n')
+
 
 def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
     all_rewards = []
     all_iters = []
     all_error_means = []
     all_error_dfs = []
+    time_per_run = []
 
     num_episodes = len(envs)
     for env, episode in zip(envs, range(num_episodes)):
@@ -171,12 +183,16 @@ def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
             max_iter=max_iters,
         )
         # if verbose: fl_pi.setVerbose()
+        t0 = time()
         fl_pi.run()
+        time_elapsed = time() - t0
+        time_per_run.append(time_elapsed)
+        if verbose: print("Episode", episode, "runtime (s):", time_elapsed)
 
         # add error means for each episode
         error_m = np.sum(fl_pi.error_mean)
         all_error_means.append(error_m)
-        print("Frozen Lake PI Episode", episode, "error mean:", error_m, '\n')
+        if verbose: print("Frozen Lake PI Episode", episode, "error mean:", error_m, '\n')
 
         error_over_iters = fl_pi.error_over_iters
         variation_over_iters = fl_pi.variation_over_iters
@@ -186,15 +202,15 @@ def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
         all_error_dfs.append(error_plot_df)
 
         policy_arrows = [DIRECTIONS[direction] for direction in fl_pi.policy]
-        print_policy(policy_arrows)
+        # print_policy(policy_arrows)
 
         rewards = calc_reward(fl_pi.policy, R)
         total_reward = np.sum(rewards)
         all_rewards.append(total_reward)
-        print("Frozen Lake PI Episode", episode, "reward:", total_reward, '\n')
+        if verbose: print("Frozen Lake PI Episode", episode, "reward:", total_reward, '\n')
 
         all_iters.append(fl_pi.iter)
-        print("Frozen Lake PI Episode", episode, "last iter:", fl_pi.iter, '\n')
+        if verbose: print("Frozen Lake PI Episode", episode, "last iter:", fl_pi.iter, '\n')
 
     filename = "fl_pi_stats.csv"
     output_to_csv(filename, all_rewards, all_iters)
@@ -208,11 +224,16 @@ def run_pi(envs, gamma=0.96, max_iters=1000, verbose=True):
     path = "graphs/fl_pi_error_iter.png"
     plotting.plot_error_over_iters(mean_error_per_iter, title, path, xlim=50)
 
+    # show avg time per run
+    avg_time_per_run = np.mean(np.array(time_per_run))
+    print("FL PI - avg seconds per run:", avg_time_per_run)
+
 
 def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
     all_rewards = []
     all_mean_discrepancies_dfs = []
     all_error_dfs = []
+    time_per_run = []
 
     num_episodes = len(envs)
     for env, episode in zip(envs, range(num_episodes)):
@@ -224,7 +245,11 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
             n_iter=n_iters,
         )
         # if verbose: fl_qlearn.setVerbose()
+        t0 = time()
         fl_qlearn.run()
+        time_elapsed = time() - t0
+        time_per_run.append(time_elapsed)
+        if verbose: print("Episode", episode, "runtime (s):", time_elapsed)
 
         # add mean discrepancies for each episode
         v_means = []
@@ -234,7 +259,7 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
         # v_mean_df.iloc[0: n_iters / 100, :] = v_means
 
         all_mean_discrepancies_dfs.append(v_mean_df)
-        print("Frozen Lake QLearning Episode", episode, "mean discrepancy:", '\n', v_mean_df, '\n')
+        if verbose: print("Frozen Lake QLearning Episode", episode, "mean discrepancy:", '\n', v_mean_df, '\n')
 
         error_over_iters = fl_qlearn.error_over_iters
         # print(error_over_iters)
@@ -243,12 +268,12 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
         all_error_dfs.append(error_plot_df)
 
         policy_arrows = [DIRECTIONS[direction] for direction in fl_qlearn.policy]
-        print_policy(policy_arrows)
+        # print_policy(policy_arrows)
 
         rewards = calc_reward(fl_qlearn.policy, R)
         total_reward = np.sum(rewards)
         all_rewards.append(total_reward)
-        print("Frozen Lake QLearning Episode", episode, "reward:", total_reward, '\n')
+        if verbose: print("Frozen Lake QLearning Episode", episode, "reward:", total_reward, '\n')
 
     filename = "tmp/fl_qlearn_stats.csv"
     rewards_df = pd.DataFrame(all_rewards)
@@ -268,6 +293,10 @@ def run_qlearn(envs, gamma=0.96, n_iters=10000, verbose=True):
     path = "graphs/fl_ql_error_iter.png"
     plotting.plot_error_over_iters(mean_error_per_iter, title, path)
 
+    # show avg time per run
+    avg_time_per_run = np.mean(np.array(time_per_run))
+    print("FL QL - avg seconds per run:", avg_time_per_run)
+
 
 def main():
     verbose = True
@@ -283,8 +312,13 @@ def main():
         fl_envs.append(fl_env)
 
     run_vi(fl_envs, gamma=gamma, max_iters=max_iters, verbose=verbose)
+    print("\n", "----------------------------------------------------------", "\n")
+
     run_pi(fl_envs, gamma=gamma, max_iters=max_iters, verbose=verbose)
+    print("\n", "----------------------------------------------------------", "\n")
+
     run_qlearn(fl_envs, gamma=gamma, n_iters=n_iters, verbose=verbose)
+    print("\n", "----------------------------------------------------------", "\n")
 
 
 if __name__ == "__main__":
